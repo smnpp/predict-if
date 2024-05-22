@@ -197,6 +197,7 @@ public class Service {
         return e;
     }
     
+    
     /*rechercherConsultationParId(Long id)
 	Fonction: cherche dans la base de données une consultation avec l'id pris en input
 	Input: id (Long)

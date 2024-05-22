@@ -102,6 +102,7 @@ public class Consultation {
     public void setEmploye(Employe employe) {
         this.employe = employe;
     }
+    
 
     @Override
     public String toString() {
