@@ -1,0 +1,73 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package serialisation;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import modele.Astrologue;
+import modele.Cartomancien;
+import modele.Consultation;
+import modele.Spirit;
+import service.Service;
+
+/**
+ *
+ * @author sperret
+ */
+public class PrevisualiserConsultationClientSerialisation extends Serialisation {
+
+    public PrevisualiserConsultationClientSerialisation(Service service) {
+        super(service);
+    }
+
+    public void appliquer(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("predictif/json;charset=UTF-8");
+        List<Consultation> consultations = (List<Consultation>) request.getAttribute("consultations");
+        JsonObject container = new JsonObject();
+        JsonArray jsonConsultations = new JsonArray();
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+
+        try {
+            if (consultations != null) {
+                for (Consultation consultation : consultations) {
+                    JsonObject jsonConsultation = new JsonObject();
+                    jsonConsultation.addProperty("date", dateFormat.format(consultation.getDate()));
+                    jsonConsultation.addProperty("denominationMedium", consultation.getMedium().getDenomination());
+                    jsonConsultation.addProperty("genre", consultation.getMedium().getGenre() == false ? "homme" : "femme");
+                    if (consultation.getMedium() instanceof Spirit) {
+                        jsonConsultation.addProperty("type", "spirit");
+                    } else if (consultation.getMedium() instanceof Cartomancien) {
+                        jsonConsultation.addProperty("type", "cartomancien");
+                    } else if (consultation.getMedium() instanceof Astrologue) {
+                        jsonConsultation.addProperty("type", "astrologue");
+                    }
+                    else {
+                        jsonConsultation.addProperty("type", "inconnue");
+                    }
+                    jsonConsultations.add(jsonConsultation);
+                }
+            }
+            container.add("consultations", jsonConsultations);
+
+            try (PrintWriter out = response.getWriter()) {
+                out.println(container.toString());
+            }
+        } catch (Exception e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erreur lors de la sérialisation des consultations");
+        }
+
+        PrintWriter out = response.getWriter();
+        out.println(container.toString());
+        out.close();
+    }
+}

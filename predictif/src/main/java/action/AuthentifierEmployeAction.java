@@ -3,6 +3,8 @@ package action;
 import service.Service;
 import modele.Employe;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import modele.Client;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -29,16 +31,20 @@ public class AuthentifierEmployeAction extends Action {
         
         Employe employe = new Employe();
         employe = service.authentifierEmploye(login, password);
+        
         if (employe != null) {
-            request.setAttribute("employe", employe);
-            System.out.println("[TEST] Employé authentifier");
+            HttpSession session = request.getSession(true);
+            session.setAttribute("idEmploye", employe.getId());
+            session.setAttribute("idClient", null);
+            
+            request.setAttribute("idEmploye", employe.getId());
+            request.setAttribute("idClient", null);
+            System.out.println("[TEST] Authentification employe réussie");
         }
         else {
-            request.setAttribute("employe", null);
-            System.out.println("[TEST] Employé échouée");
+            request.setAttribute("idClient", null);
+            request.setAttribute("idEmploye", null);
+            System.out.println("[TEST] Authentification employe échouée");
         }
-        
-        
     }
-    
 }

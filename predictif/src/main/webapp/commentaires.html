@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Commentaires</title>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+    <h1>Predicti'IF - Commentaires</h1>
+
+    <div id="nav-connecte">
+        <button id="bouton-accueil-connecte">Accueil</button> <br>
+        <button id="logout">Logout</button>
+    </div>
+
+    <div id="consultation-history"></div>
+
+    <script>
+        $(document).ready(function () {
+            // Charger l'historique des consultations après la vérification de connexion
+            $.ajax({
+                url: './ActionServlet',
+                method: 'GET',
+                data: {
+                    todo: 'listerCommentaires'
+                },
+                dataType: 'json'
+            })
+            .done(function (response) {
+                console.log("listerCommentaires response:", response);
+                var commentHistory = $("#comment-history");
+                if (response.commentaires && response.commentaires.length > 0) {
+                    response.commentaires.forEach(function (commentaire) {
+                        var commentaireHtml = `<p>Commentaire: ${commentaire}</p>`;
+                        commentHistory.append(commentaireHtml);
+                    });
+                } else {
+                    commentHistory.html("<p>Aucun commentaire trouvé.</p>");
+                }
+            })
+            .fail(function (error) {
+                console.log('Error listerCommentaires', error); // LOG dans Console Javascript
+                console.log('Status: ' + error.status);
+                console.log('Response Text: ' + error.responseText);
+                $("#comment-history").html("<p>Erreur lors de la récupération des commentaires.</p>");
+            });
+
+            // Déconnexion lors du clic sur le bouton "Logout"
+            $('#logout').on('click', function () {
+                console.log("Logout clicked");
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'POST',
+                    data: {
+                        todo: 'deconnexion'
+                    },
+                    dataType: 'json'
+                })
+                .done(function () {
+                    console.log("Logout successful");
+                    window.location.href = 'index.html';
+                })
+                .fail(function (error) {
+                    console.log('Error deconnexion:', error); // LOG dans Console Javascript
+                    alert("Erreur lors de l'appel AJAX");
+                });
+            });
+
+            // Redirection vers la page d'accueil lors du clic sur le bouton "Accueil"
+            $('#bouton-accueil-connecte').on('click', function () {
+                console.log("Redirect to index.html");
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+</body>
+</html>

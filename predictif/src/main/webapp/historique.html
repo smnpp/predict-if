@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Historique des Consultations</title>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+    <h1>Predicti'IF - Historique des Consultations</h1>
+
+    <div id="nav-connecte">
+        <button id="bouton-voir-liste">Voir liste medium</button> <br>
+        <button id="bouton-profil">Profil astral</button> <br>
+        <button id="bouton-accueil-connecte">Accueil</button> <br>
+        <button id="logout">Logout</button>
+    </div>
+
+    <div id="consultation-history"></div>
+
+    <script>
+        $(document).ready(function () {
+            // Charger l'historique des consultations après la vérification de connexion
+            $.ajax({
+                url: './ActionServlet',
+                method: 'GET',
+                data: {
+                    todo: 'listerConsultations'
+                },
+                dataType: 'json'
+            })
+            .done(function (response) {
+                console.log("listerConsultations response:", response);
+                var consultationHistory = $("#consultation-history");
+                if (response.consultations && response.consultations.length > 0) {
+                    response.consultations.forEach(function (consultation) {
+                        var consultationHtml = `<p>Date: ${consultation.date}, Medium: ${consultation.denominationMedium}, Type ${consultation.type}, Genre ${consultation.genre}</p>`;
+                        consultationHistory.append(consultationHtml);
+                    });
+                } else {
+                    consultationHistory.html("<p>Aucune consultation trouvée.</p>");
+                }
+            })
+            .fail(function (error) {
+                console.log('Error listerConsultations:', error); // LOG dans Console Javascript
+                console.log('Status: ' + error.status);
+                console.log('Response Text: ' + error.responseText);
+                $("#consultation-history").html("<p>Erreur lors de la récupération des consultations.</p>");
+            });
+
+            // Déconnexion lors du clic sur le bouton "Logout"
+            $('#logout').on('click', function () {
+                console.log("Logout clicked");
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'POST',
+                    data: {
+                        todo: 'deconnexion'
+                    },
+                    dataType: 'json'
+                })
+                .done(function () {
+                    console.log("Logout successful");
+                    window.location.href = 'index.html';
+                })
+                .fail(function (error) {
+                    console.log('Error deconnexion:', error); // LOG dans Console Javascript
+                    alert("Erreur lors de l'appel AJAX");
+                });
+            });
+
+            // Redirection vers la page d'accueil lors du clic sur le bouton "Accueil"
+            $('#bouton-accueil-connecte').on('click', function () {
+                console.log("Redirect to index.html");
+                window.location.href = 'index.html';
+            });
+
+            // Redirection vers le profil astral lors du clic sur le bouton "Profil astral"
+            $('#bouton-profil').on('click', function () {
+                console.log("Redirect to profilAstral.html");
+                window.location.href = 'profilAstral.html';
+            });
+
+            // Redirection vers la liste des mediums lors du clic sur le bouton "Voir liste medium"
+            $('#bouton-voir-liste').on('click', function () {
+                console.log("Redirect to listeMedium.html");
+                window.location.href = 'listeMedium.html';
+            });
+        });
+    </script>
+</body>
+</html>

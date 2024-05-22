@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Liste Medium</title>
+        <meta charset="UTF-8">
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    </head>
+    <body>
+        <h1>Predicti'IF - Liste des mediums</h1>
+
+        <div id="nav-non-connecte">
+            <button id="bouton-accueil">Accueil</button> <br>
+            <button id="bouton-login">Login/Register</button>
+        </div>
+
+        <div id="nav-connecte" style="display: none;">
+            <button id="bouton-accueil-connecte">Accueil</button> <br>
+            <button id="bouton-historique">Historique</button> <br>
+            <button id="bouton-profil">Profil astral</button> <br>
+            <button id="logout">Logout</button>
+        </div>
+
+        <div id="medium-list"></div>
+
+        <script>
+            $(document).ready(function () {
+                console.log("Document ready - listeMedium");
+                var isConnected = false;
+                var idClient = null;
+
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'GET',
+                    data: {todo: 'verifierConnexion'},
+                    dataType: 'json'
+                }).done(function (response) {
+                    console.log("verifierConnexion response:", response);
+                    if (response.idClient) {
+                        $('#nav-non-connecte').hide();
+                        $('#nav-connecte').show();
+                        isConnected = true;
+                        idClient = response.idClient; // Storing client ID for later use
+                    } else {
+                        $('#nav-non-connecte').show();
+                        $('#nav-connecte').hide();
+                    }
+
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'GET',
+                        data: {todo: 'listerMediums'},
+                        dataType: 'json'
+                    }).done(function (response) {
+                        console.log("listerMediums response:", response);
+                        var mediumList = $("#medium-list");
+                        if (response.mediums && response.mediums.length > 0) {
+                            response.mediums.forEach(function (medium) {
+                                var mediumHtml = `<p>Nom: ${medium.denomination}, Genre: ${medium.genre}, Description: ${medium.presentation}`;
+                                if (medium.type === "spirit") {
+                                    mediumHtml += `, Supports: ${medium.supports.join(", ")}`;
+                                } else if (medium.type === "astrologue") {
+                                    mediumHtml += `, Formation: ${medium.formation}, Promotion: ${medium.promotion}`;
+                                }
+                                if (isConnected) {
+                                    mediumHtml += ` <button class="select-button" data-medium-id="${medium.id}" data-medium-name="${medium.denomination}">Sélectionner</button>`;
+                                }
+                                mediumHtml += `</p>`;
+                                mediumList.append(mediumHtml);
+                            });
+
+                            $('.select-button').on('click', function () {
+                                var mediumId = $(this).data('medium-id');
+                                var mediumName = $(this).data('medium-name');
+                                console.log("Selected Medium ID:", mediumId, "Name:", mediumName);
+                                $.ajax({
+                                    url: './ActionServlet',
+                                    method: 'POST',
+                                    data: {
+                                        todo: 'ajouterConsultation',
+                                        idClient: idClient,
+                                        nomMedium: mediumName
+                                    },
+                                    dataType: 'json'
+                                }).done(function (response) {
+                                    alert("Consultation ajoutée avec succès!");
+                                }).fail(function (error) {
+                                    console.log("Error adding consultation:", error);
+                                    alert("Erreur lors de l'ajout de la consultation");
+                                });
+                            });
+                        } else {
+                            mediumList.html("<p>Aucun medium trouvé.</p>");
+                        }
+                    }).fail(function (error) {
+                        console.log('Error listerMediums:', error);
+                        $("#medium-list").html("<p>Erreur lors de la récupération des mediums.</p>");
+                    });
+                }).fail(function (error) {
+                    console.log('Error verifierConnexion:', error);
+                });
+
+                $('#logout').on('click', function () {
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {todo: 'deconnexion'},
+                        dataType: 'json'
+                    }).done(function () {
+                        window.location.href = 'index.html';
+                    }).fail(function (error) {
+                        alert("Erreur lors de l'appel AJAX");
+                    });
+                });
+
+                $('#bouton-accueil, #bouton-accueil-connecte').on('click', function () {
+                    window.location.href = 'index.html';
+                });
+
+                $('#bouton-login').on('click', function () {
+                    window.location.href = 'login.html';
+                });
+
+                $('#bouton-profil').on('click', function () {
+                    window.location.href = 'profilAstral.html';
+                });
+
+                $('#bouton-historique').on('click', function () {
+                    window.location.href = 'historique.html';
+                });
+            });
+        </script>
+    </body>
+</html>

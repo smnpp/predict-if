@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Register</title>
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    </head>
+    <body>
+        <h1>Predicti'IF - Register</h1>
+        <button id="bouton-accueil">Accueil</button>
+        <br/>
+
+        <!-- Champs et Bouton de Formulaire -->
+        Nom : <input type="text" id="champ-nom" size="40" />
+        <br/>
+        Prenom : <input type="text" id="champ-prenom" />
+        <br/>
+        Telephone : <input type="text" id="champ-telephone" size="40" />
+        <br/>
+        Adresse : <input type="text" id="champ-adresse" size="40" />
+        <br/>
+        E-mail : <input type="text" id="champ-email" size="40" />
+        <br/>
+        Mot de passe : <input type="password" id="champ-mdp" size="40" />
+        <br/>
+        Date de naissance : <input type="date" id="champ-date" size="40"  min="1900-01-01"/>
+        <br/>
+        Genre : <input type="text" id="champ-genre" size="40" />
+        <br/>
+        <button id="bouton-register">Register</button>
+
+        <script>
+            $(document).ready(function () {
+                var today = new Date().toISOString().split('T')[0];
+                $('#champ-date').attr('max', today);
+
+                $('#bouton-register').on('click', function () {
+                    var champNom = $('#champ-nom').val();
+                    var champPrenom = $('#champ-prenom').val();
+                    var champTelephone = $('#champ-telephone').val();
+                    var champAdresse = $('#champ-adresse').val();
+                    var champEmail = $('#champ-email').val();
+                    var champPassword = $('#champ-mdp').val();
+                    var champDate = $('#champ-date').val();
+                    var champGenre = $('#champ-genre').val();
+
+                    // Reformatage de la date de YYYY-MM-DD à DD/MM/YYYY
+                    var dateParts = champDate.split("-");
+                    var dateReformated = dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0];
+
+                    // Appel AJAX pour l'enregistrement
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {
+                            todo: 'register',
+                            nom: champNom,
+                            prenom: champPrenom,
+                            telephone: champTelephone,
+                            adresse: champAdresse,
+                            email: champEmail,
+                            password: champPassword,
+                            date: dateReformated, // Envoyer la date réformée
+                            genre: champGenre
+                        },
+                        dataType: 'json'
+                    })
+                            .done(function (response) {
+                                if (response.connexion) {
+                                    $('#notification').html("Enregistrement réussi de " + response.nom + " (" + response.id + ")");
+                                    window.location.href = 'index.html';
+                                } else {
+                                    $('#notification').html("Erreur d'enregistrement");
+                                }
+                            })
+                            .fail(function (error) {
+                                console.log('Error', error);
+                                alert("Erreur lors de l'appel AJAX");
+                            });
+                });
+
+                $('#bouton-accueil').on('click', function () {
+                    window.location.href = 'index.html';
+                });
+            });
+        </script>
+    </body>
+</html>

@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import modele.Employe;
+import modele.Client;
 import service.Service;
 
 /*
@@ -23,42 +23,44 @@ import service.Service;
  *
  * @author sperret
  */
-public class ProfilEmployeSerialisation extends Serialisation {
+public class ProfilClientSerialisation extends Serialisation {
 
-    public ProfilEmployeSerialisation(Service service) {
+    public ProfilClientSerialisation(Service service) {
         super(service);
     }
 
     @Override
     public void appliquer(HttpServletRequest req, HttpServletResponse res) throws IOException {
-        System.out.println("[TEST] Execution de ProfilEmployeSerialisation");
+        System.out.println("[TEST] Execution de ProfilClientSerialisation");
         res.setContentType("predictif/json;charset=UTF-8");
 
         Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
         JsonObject container = new JsonObject();
 
-        Long idEmploye = (Long) req.getAttribute("idEmploye");
-        Employe employe = service.rechercherEmployeParId(idEmploye);
+        Long idClient = (Long) req.getAttribute("idClient");
+        Client client = service.rechercherClientParId(idClient);
         
-        JsonObject employeJson = new JsonObject();
-        if (employe != null) {
+        JsonObject clientJson = new JsonObject();
+        if (client != null) {
             container.addProperty("connexion", true);
-            employeJson.addProperty("idEmploye", idEmploye);
-            employeJson.addProperty("nom", employe.getNom());
-            employeJson.addProperty("prenom", employe.getPrenom());
-            employeJson.addProperty("mail", employe.getMail());
+            clientJson.addProperty("idClient", idClient);
+            clientJson.addProperty("nom", client.getNom());
+            clientJson.addProperty("prenom", client.getPrenom());
+            clientJson.addProperty("mail", client.getMail());
 
-            container.add("employe", employeJson);
-            System.out.println("[TEST] ProfilEmployeSerialisation : authentifié");
+            container.add("client", clientJson);
+            System.out.println("[TEST] ProfilClientSerialisation : authentifié");
         }
         else {
             container.addProperty("connexion", false);
-            System.out.println("[TEST] ProfilEmployeSerialisation : échoué");
+            System.out.println("[TEST] ProfilClientSerialisation : échoué");
         }
 
         PrintWriter out = res.getWriter();
         out.println(gson.toJson(container));
         out.close();
+
+        
     }
 
 }
