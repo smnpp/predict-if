@@ -32,7 +32,7 @@ public class Service_init {
         try {
             JpaUtil.creerContextePersistance();
             JpaUtil.ouvrirTransaction();
-            File file = new File("src\\main\\java\\service\\Employee.csv");
+            File file = new File("src/main/java/service/Employee.csv");
             
             BufferedReader reader = new BufferedReader(new FileReader(file.getAbsolutePath()));
             String line;
