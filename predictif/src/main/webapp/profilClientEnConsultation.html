@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Client Details</title>
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    </head>
+    <body>
+        <h1>Client Details</h1>
+
+        <div id="head-bande">
+            <button id="bouton-consultation">Consultation en cours</button> <br>
+            <button id="bouton-prediction">Prediction</button> <br>
+            <button id="logout">Logout</button>
+        </div>
+
+        <div id="profil-info">
+            <h2>Client : <span id="prenom"></span> <span id="nom"></span></h2>
+            <h3>Profile Astral</h3>
+            <p>Animal totem: <span id="animal"></span></p>
+            <p>Signe du zodiaque: <span id="zodiaque"></span></p>
+            <p>Couleur: <span id="couleur"></span></p>
+            <p>Signe Chinois: <span id="chinois"></span></p>
+        </div>
+
+        <div id="consultation-history">
+            <h3>Consultation History</h3>
+        </div>
+
+        <script>
+            $(document).ready(function () {
+                // Fetch and display client's astral profile
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'GET',
+                    data: {
+                        todo: 'previsualiserProfilClient'
+                    },
+                    dataType: 'json'
+                })
+                        .done(function (response) {
+                            if (response) {
+                                $('#nom').text(response.client.nom);
+                                $('#prenom').text(response.client.prenom);
+                                $('#animal').text(response.client.animal);
+                                $('#zodiaque').text(response.client.zodiaque);
+                                $('#couleur').text(response.client.couleur);
+                                $('#chinois').text(response.client.chinois);
+                            } else {
+                                $('#profil-info').html("<p>Erreur lors du chargement des informations du profil.</p>");
+                            }
+                        })
+                        .fail(function () {
+                            $('#profil-info').html("<p>Erreur lors de la communication avec le serveur.</p>");
+                        });
+
+                // Fetch and display consultation history
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'GET',
+                    data: {
+                        todo: 'previsualiserConsultationClient'
+                    },
+                    dataType: 'json'
+                })
+                        .done(function (response) {
+                            var consultationHistory = $("#consultation-history");
+                            if (response.consultations && response.consultations.length > 0) {
+                                response.consultations.forEach(function (consultation) {
+                                    var consultationHtml = `<p>Date: ${consultation.date}, Medium: ${consultation.denominationMedium}</p>`;
+                                    consultationHistory.append(consultationHtml);
+                                });
+                            } else {
+                                consultationHistory.html("<p>Aucune consultation trouvée.</p>");
+                            }
+                        })
+                        .fail(function () {
+                            $("#consultation-history").html("<p>Erreur lors de la récupération des consultations.</p>");
+                        });
+
+                // Logout button event
+                $('#logout').on('click', function () {
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {
+                            todo: 'deconnexion'
+                        },
+                        dataType: 'json'
+                    })
+                            .done(function (response) {
+                                if (response.success) {
+                                    console.log("Logout successful");
+                                    localStorage.removeItem('commentValidated'); // Ensure the local storage is cleared on logout
+                                    window.location.href = 'index.html';
+                                } else {
+                                    console.log("Logout failed: " + response.message);
+                                    alert("Déconnexion échouée: " + response.message);
+                                }
+                            })
+                            .fail(function (error) {
+                                console.log('Error deconnexion:', error);
+                                alert("Erreur lors de l'appel AJAX: " + error.statusText);
+                            });
+                });
+                $('#bouton-consultation').on('click', function () {
+                    window.location.href = 'consultation.html';
+                });
+                $('#bouton-prediction').on('click', function () {
+                    window.location.href = 'prediction.html';
+                });
+            });
+        </script>
+    </body>
+</html>

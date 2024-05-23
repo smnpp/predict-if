@@ -8,23 +8,25 @@
     <body>
         <h1>Predicti'IF - Liste des mediums</h1>
 
-        <div id="nav-non-connecte">
-            <button id="bouton-accueil">Accueil</button> <br>
-            <button id="bouton-login">Login/Register</button>
-        </div>
+        <div id="head-bande">
+            <div id="nav-non-connecte">
+                <button id="bouton-accueil">Accueil</button>
+                <button id="bouton-login">Login/Register</button>
+            </div>
 
-        <div id="nav-connecte" style="display: none;">
-            <button id="bouton-accueil-connecte">Accueil</button> <br>
-            <button id="bouton-historique">Historique</button> <br>
-            <button id="bouton-profil">Profil astral</button> <br>
-            <button id="logout">Logout</button>
+            <div id="nav-connecte" style="display: none;">
+                <button id="bouton-accueil-connecte">Accueil</button>
+                <button id="bouton-historique">Historique</button>
+                <button id="bouton-profil">Profil astral</button>
+                <button id="logout">Logout</button>
+            </div>
         </div>
 
         <div id="medium-list"></div>
 
         <script>
             $(document).ready(function () {
-                console.log("Document ready - listeMedium");
+                console.log("Prêt à afficher la liste des mediums.");
                 var isConnected = false;
                 var idClient = null;
 
@@ -34,12 +36,12 @@
                     data: {todo: 'verifierConnexion'},
                     dataType: 'json'
                 }).done(function (response) {
-                    console.log("verifierConnexion response:", response);
+                    console.log("Réponse de connexion : ", response);
                     if (response.idClient) {
                         $('#nav-non-connecte').hide();
                         $('#nav-connecte').show();
                         isConnected = true;
-                        idClient = response.idClient; // Storing client ID for later use
+                        idClient = response.idClient;
                     } else {
                         $('#nav-non-connecte').show();
                         $('#nav-connecte').hide();
@@ -51,18 +53,13 @@
                         data: {todo: 'listerMediums'},
                         dataType: 'json'
                     }).done(function (response) {
-                        console.log("listerMediums response:", response);
+                        console.log("Médiums chargés avec succès.");
                         var mediumList = $("#medium-list");
                         if (response.mediums && response.mediums.length > 0) {
                             response.mediums.forEach(function (medium) {
                                 var mediumHtml = `<p>Nom: ${medium.denomination}, Genre: ${medium.genre}, Description: ${medium.presentation}`;
-                                if (medium.type === "spirit") {
-                                    mediumHtml += `, Supports: ${medium.supports.join(", ")}`;
-                                } else if (medium.type === "astrologue") {
-                                    mediumHtml += `, Formation: ${medium.formation}, Promotion: ${medium.promotion}`;
-                                }
                                 if (isConnected) {
-                                    mediumHtml += ` <button class="select-button" data-medium-id="${medium.id}" data-medium-name="${medium.denomination}">Sélectionner</button>`;
+                                    mediumHtml += ` <button class="select-button" data-medium-id="${medium.id}">Sélectionner</button>`;
                                 }
                                 mediumHtml += `</p>`;
                                 mediumList.append(mediumHtml);
@@ -70,61 +67,75 @@
 
                             $('.select-button').on('click', function () {
                                 var mediumId = $(this).data('medium-id');
-                                var mediumName = $(this).data('medium-name');
-                                console.log("Selected Medium ID:", mediumId, "Name:", mediumName);
+                                console.log("Médium sélectionné ID:", mediumId);
                                 $.ajax({
                                     url: './ActionServlet',
                                     method: 'POST',
                                     data: {
                                         todo: 'ajouterConsultation',
                                         idClient: idClient,
-                                        nomMedium: mediumName
+                                        idMedium: mediumId
                                     },
                                     dataType: 'json'
                                 }).done(function (response) {
-                                    alert("Consultation ajoutée avec succès!");
+                                    alert("Consultation ajoutée avec succès.");
                                 }).fail(function (error) {
-                                    console.log("Error adding consultation:", error);
-                                    alert("Erreur lors de l'ajout de la consultation");
+                                    console.error("Erreur lors de l'ajout de la consultation :", error);
+                                    alert("Erreur lors de l'ajout de la consultation.");
                                 });
                             });
                         } else {
                             mediumList.html("<p>Aucun medium trouvé.</p>");
                         }
                     }).fail(function (error) {
-                        console.log('Error listerMediums:', error);
+                        console.error("Erreur lors de la récupération des mediums :", error);
                         $("#medium-list").html("<p>Erreur lors de la récupération des mediums.</p>");
                     });
                 }).fail(function (error) {
-                    console.log('Error verifierConnexion:', error);
+                    console.error("Erreur lors de la vérification de la connexion :", error);
                 });
 
                 $('#logout').on('click', function () {
                     $.ajax({
                         url: './ActionServlet',
                         method: 'POST',
-                        data: {todo: 'deconnexion'},
+                        data: {
+                            todo: 'deconnexion'
+                        },
                         dataType: 'json'
-                    }).done(function () {
-                        window.location.href = 'index.html';
-                    }).fail(function (error) {
-                        alert("Erreur lors de l'appel AJAX");
-                    });
+                    })
+                            .done(function (response) {
+                                if (response.success) {
+                                    console.log("Déconnexion réussie.");
+                                    window.location.href = 'index.html';
+                                } else {
+                                    console.error("Échec de la déconnexion :", response.message);
+                                    alert("Déconnexion échouée: " + response.message);
+                                }
+                            })
+                            .fail(function (error) {
+                                console.error("Erreur lors de la déconnexion :", error);
+                                alert("Erreur lors de l'appel AJAX: " + error.statusText);
+                            });
                 });
 
                 $('#bouton-accueil, #bouton-accueil-connecte').on('click', function () {
+                    console.log("Redirection vers la page d'accueil.");
                     window.location.href = 'index.html';
                 });
 
                 $('#bouton-login').on('click', function () {
+                    console.log("Redirection vers la page de connexion.");
                     window.location.href = 'login.html';
                 });
 
                 $('#bouton-profil').on('click', function () {
+                    console.log("Redirection vers le profil astral.");
                     window.location.href = 'profilAstral.html';
                 });
 
                 $('#bouton-historique').on('click', function () {
+                    console.log("Redirection vers l'historique.");
                     window.location.href = 'historique.html';
                 });
             });

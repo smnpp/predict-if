@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Détails du Client</title>
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    </head>
+    <body>
+        <h1>Détails du Client</h1>
+
+        <div id="head-bande">
+            <button id="bouton-commentaires">Commentaires</button>
+            <button id="bouton-accueil-connecte">Accueil</button>
+            <button id="logout">Déconnexion</button>
+        </div>
+
+        <div id="profil-info">
+            <h2>Client : <span id="prenom"></span> <span id="nom"></span></h2>
+            <h3>Profil Astral</h3>
+            <p>Animal totem: <span id="animal"></span></p>
+            <p>Signe du zodiaque: <span id="zodiaque"></span></p>
+            <p>Couleur: <span id="couleur"></span></p>
+            <p>Signe Chinois: <span id="chinois"></span></p>
+        </div>
+
+        <div id="consultation-history">
+            <h3>Historique des Consultations</h3>
+        </div>
+
+        <button id="bouton-pret">Prêt</button>
+
+        <script>
+            $(document).ready(function () {
+                var idConsult = 0;
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'GET',
+                    data: {todo: 'afficherConsultationEnCoursEmploye'},
+                    dataType: 'json'
+                }).done(function (response) {
+                    if (response.idConsultation) {
+                        idConsult = response.idConsultation;
+                        console.log('Consultation en cours récupérée avec succès.');
+                    }
+                }).fail(function (error) {
+                    console.error('Erreur lors de la récupération de la consultation en cours.', error);
+                });
+
+                // Fetch and display client's astral profile
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'GET',
+                    data: {todo: 'previsualiserProfilClient'},
+                    dataType: 'json'
+                })
+                .done(function (response) {
+                    if (response) {
+                        $('#nom').text(response.nom);
+                        $('#prenom').text(response.prenom);
+                        $('#animal').text(response.animal);
+                        $('#zodiaque').text(response.zodiaque);
+                        $('#couleur').text(response.couleur);
+                        $('#chinois').text(response.chinois);
+                        console.log('Profil client chargé avec succès.');
+                    } else {
+                        $('#profil-info').html("<p>Erreur lors du chargement des informations du profil.</p>");
+                        console.log('Aucune information de profil trouvée.');
+                    }
+                })
+                .fail(function () {
+                    $('#profil-info').html("<p>Erreur lors de la communication avec le serveur.</p>");
+                    console.error('Erreur lors de la communication avec le serveur pour le profil client.');
+                });
+
+                // Fetch and display consultation history
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'GET',
+                    data: {todo: 'previsualiserConsultationClient'},
+                    dataType: 'json'
+                })
+                .done(function (response) {
+                    var consultationHistory = $("#consultation-history");
+                    if (response.consultations && response.consultations.length > 0) {
+                        response.consultations.forEach(function (consultation) {
+                            var consultationHtml = `<p>Date: ${consultation.date}, Medium: ${consultation.denominationMedium}</p>`;
+                            consultationHistory.append(consultationHtml);
+                        });
+                        console.log('Historique des consultations chargé avec succès.');
+                    } else {
+                        consultationHistory.html("<p>Aucune consultation trouvée.</p>");
+                        console.log('Aucune consultation trouvée pour ce client.');
+                    }
+                })
+                .fail(function () {
+                    $("#consultation-history").html("<p>Erreur lors de la récupération des consultations.</p>");
+                    console.error('Erreur lors de la récupération de l\'historique des consultations.');
+                });
+
+                $('#logout').on('click', function () {
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {todo: 'deconnexion'},
+                        dataType: 'json'
+                    })
+                    .done(function (response) {
+                        if (response.success) {
+                            console.log("Déconnexion réussie.");
+                            localStorage.removeItem('commentValidated'); // Ensure the local storage is cleared on logout
+                            window.location.href = 'index.html';
+                        } else {
+                            console.error("Échec de la déconnexion.", response.message);
+                            alert("Déconnexion échouée: " + response.message);
+                        }
+                    })
+                    .fail(function (error) {
+                        console.error('Erreur lors de la déconnexion.', error);
+                        alert("Erreur lors de l'appel AJAX: " + error.statusText);
+                    });
+                });
+
+                $('#bouton-pret').on('click', function () {
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {todo: 'etrePret', idConsultation: idConsult},
+                        dataType: 'json'
+                    })
+                    .done(function (response) {
+                        if (response.success) {
+                            console.log('Redirection vers la page de consultation.');
+                            window.location.href = 'consultation.html';
+                        } else {
+                            console.error('Erreur lors de l\'activation de l\'état prêt.');
+                        }
+                    })
+                    .fail(function (error) {
+                        alert("Erreur lors de l'appel AJAX pour être prêt.");
+                        console.error('Error:', error);
+                    });
+                });
+                $('#bouton-commentaires').on('click', function () {
+                    console.log("Redirect to commentaires.html");
+                    window.location.href = 'commentaires.html';
+                });
+                $('#bouton-accueil-connecte').on('click', function () {
+                    console.log("Redirect to index.html");
+                    window.location.href = 'index.html';
+                });
+            });
+        </script>
+    </body>
+</html>

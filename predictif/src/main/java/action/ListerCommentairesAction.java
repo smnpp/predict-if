@@ -29,10 +29,10 @@ public class ListerCommentairesAction extends Action {
         
         List<String> commentaires = service.voirCommentaires();
         if (commentaires != null){
-            request.setAttribute("commentaires", commentaires);
+            request.setAttribute("liste", commentaires);
         }
         else {
-            request.setAttribute("commentaires", null);
+            request.setAttribute("liste", null);
         }
         System.out.println("[TEST] Execution de ListerConsultationsAction terminée");    
         

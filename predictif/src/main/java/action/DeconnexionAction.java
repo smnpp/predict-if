@@ -24,18 +24,27 @@ public class DeconnexionAction extends Action {
 
     @Override
     public void execute(HttpServletRequest request) {
-        System.out.println("[TEST] Execution de DeconnexionAction");   
-        HttpSession session = request.getSession(true);
-        if (session.getAttribute("idClient") != null || session.getAttribute("idEmploye") != null) {
-            session.setAttribute("idClient", null);
-            session.setAttribute("idEmploye", null);
-            session.invalidate();
-            System.out.println("[TEST] Déconnexion réussie");   
+        System.out.println("[TEST] Execution de DeconnexionAction");
+        HttpSession session = request.getSession(false); // Get session if exists, do not create a new one
+        if (session != null) {
+            try {
+                if (session.getAttribute("idClient") != null || session.getAttribute("idEmploye") != null) {
+                    session.setAttribute("idClient", null);
+                    session.setAttribute("idClient", null);
+                    session.invalidate(); // Invalidate the session to remove all attributes
+                    request.setAttribute("success", true);
+                    System.out.println("[TEST] Déconnexion réussie");
+                } else {
+                    request.setAttribute("success", true);
+                    System.out.println("[TEST] Déjà déconnecté");
+                }
+            } catch (Exception e) {
+                request.setAttribute("success", false);
+                System.out.println("[ERROR] Erreur lors de la déconnexion: " + e.getMessage());
+            }
+        } else {
+            request.setAttribute("success", true);
+            System.out.println("[TEST] Aucune session à déconnecter.");
         }
-        else {
-            System.out.println("[TEST] Déjà déconnecté");   
-        }
-        request.setAttribute("idClient", null);
-        request.setAttribute("idEmploye", null);   
-    } 
+    }
 }

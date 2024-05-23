@@ -33,15 +33,11 @@ public class PrevisualiserProfilClientAction extends Action {
         
         Consultation consultationEnCours = service.rechercherConsultationEnCoursEmploye(id);
         Client client = consultationEnCours.getClient();
-        request.setAttribute("idClient", client.getId());
         ProfilAstral astral = client.getProfilAstral();
-
-        request.setAttribute("nom", client.getNom());
-        request.setAttribute("prenom", client.getPrenom());
-        request.setAttribute("animal", astral.getAnimal());
-        request.setAttribute("zodiaque", astral.getSigneZodiaque());
-        request.setAttribute("couleur", astral.getCouleur());
-        request.setAttribute("chinois", astral.getSigneChinois());
+        
+        request.setAttribute("client", client); 
+        request.setAttribute("astral", astral);
+        
         System.out.println("[TEST] Execution de PrevisualiserProfilClientAction terminée");
     }
     

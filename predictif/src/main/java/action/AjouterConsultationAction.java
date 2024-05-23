@@ -27,7 +27,13 @@ public class AjouterConsultationAction extends Action {
         Medium medium = service.rechercherMediumParNom(nomMedium);
         Consultation consultation = service.ajouterConsultation(client, medium);
 
-        request.setAttribute("consultation", consultation);
+        
+        if (consultation != null) {
+            request.setAttribute("success", true);
+        }
+        else {
+            request.setAttribute("success", false);
+        }
         System.out.println("[TEST] Ajout de consultation terminée");
     }
 }

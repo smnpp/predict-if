@@ -7,85 +7,90 @@
     </head>
     <body>
         <h1>Profil Client</h1>
-        
+
         <div id="head-bande">
-            <button id="bouton-voir-liste">Voir liste medium</button> <br>
-            <button id="bouton-historique">Historique</button> <br>
-            <button id="bouton-accueil-connecte">Accueil</button> <br>
+            <button id="bouton-voir-liste">Voir liste medium</button>
+            <button id="bouton-historique">Historique</button>
+            <button id="bouton-accueil-connecte">Accueil</button>
             <button id="logout">Logout</button>
         </div>
-        
+
         <div id="profil-info">
-            <h3>Profile Astral de <span id="client-prenom"></span> <span id="client-nom"> ( <span id="client-id"></span> )</span>.</h3>
-            <p>Votre animal totem est le <span id="animal"></span></p>
-            <p>Votre signe du zodiaque est <span id="zodiaque"></span></p>
-            <p>Votre couleur est le <span id="couleur"></span></p>
-            <p>Votre signe Chinois est <span id="chinois"></span></p>
+            <h3>Profile Astral de <span id="client-prenom"></span> <span id="client-nom"></span> ( <span id="client-id"></span> ).</h3>
+            <p>Votre animal totem est le <span id="animal"></span>.</p>
+            <p>Votre signe du zodiaque est <span id="zodiaque"></span>.</p>
+            <p>Votre couleur est le <span id="couleur"></span>.</p>
+            <p>Votre signe Chinois est <span id="chinois"></span>.</p>
         </div>
 
         <script>
             $(document).ready(function () {
+                console.log("Chargement de la page de profil client.");
+
                 // Appel AJAX pour obtenir les informations du client
                 $.ajax({
                     url: './ActionServlet',
                     method: 'GET',
-                    data: {
-                        todo: 'afficherProfilClient'
-                    },
+                    data: {todo: 'afficherProfilClient'},
                     dataType: 'json'
                 })
                 .done(function (response) {
-                    if (response.idClient) {
-                        $('#client-id').text(response.idClient);
-                        $('#client-nom').text(response.nom);
-                        $('#client-prenom').text(response.prenom);
-                        $('#animal').text(response.animal);
-                        $('#zodiaque').text(response.zodiaque);
-                        $('#chinois').text(response.chinois);
-                        $('#couleur').text(response.couleur);
+                    if (response) {
+                        console.log("Profil client chargé avec succès.");
+                        $('#client-id').text(response.client.idClient);
+                        $('#client-nom').text(response.client.nom);
+                        $('#client-prenom').text(response.client.prenom);
+                        $('#animal').text(response.client.animal);
+                        $('#zodiaque').text(response.client.zodiaque);
+                        $('#chinois').text(response.client.chinois);
+                        $('#couleur').text(response.client.couleur);
                     } else {
+                        console.log("Erreur lors du chargement des informations du profil client.");
                         $('#profil-info').html("<p>Erreur lors du chargement des informations du profil.</p>");
                     }
                 })
-                .fail(function () {
+                .fail(function (error) {
+                    console.error("Erreur de communication avec le serveur lors de la récupération du profil client.", error);
                     $('#profil-info').html("<p>Erreur lors de la communication avec le serveur.</p>");
                 });
+
                 $('#logout').on('click', function () {
-                console.log("Logout clicked");
-                $.ajax({
-                    url: './ActionServlet',
-                    method: 'POST',
-                    data: {
-                        todo: 'deconnexion'
-                    },
-                    dataType: 'json'
-                })
-                .done(function () {
-                    console.log("Logout successful");
-                    window.location.href = 'index.html';
-                })
-                .fail(function (error) {
-                    console.log('Error deconnexion:', error); // LOG dans Console Javascript
-                    alert("Erreur lors de l'appel AJAX");
+                    console.log("Tentative de déconnexion...");
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {todo: 'deconnexion'},
+                        dataType: 'json'
+                    })
+                    .done(function (response) {
+                        if (response.success) {
+                            console.log("Déconnexion réussie.");
+                            window.location.href = 'index.html';
+                        } else {
+                            console.error("Échec de la déconnexion.", response.message);
+                            alert("Déconnexion échouée: " + response.message);
+                        }
+                    })
+                    .fail(function (error) {
+                        console.error('Erreur lors de la déconnexion.', error);
+                        alert("Erreur lors de l'appel AJAX: " + error.statusText);
+                    });
                 });
-            });
 
-            // Redirection vers la page d'accueil lors du clic sur le bouton "Accueil"
-            $('#bouton-accueil-connecte').on('click', function () {
-                console.log("Redirect to index.html");
-                window.location.href = 'index.html';
-            });
+                $('#bouton-accueil-connecte').on('click', function () {
+                    console.log("Redirection vers la page d'accueil.");
+                    window.location.href = 'index.html';
+                });
 
-            // Redirection vers le profil astral lors du clic sur le bouton "Profil astral"
-            $('#bouton-historique').on('click', function () {
-                console.log("Redirect to historique.html");
-                window.location.href = 'historique.html';
-            });
-            
-            $('#bouton-voir-liste').on('click', function () {
-                console.log("Redirect to listeMedium.html");
-                window.location.href = 'listeMedium.html';
-            });
+                $('#bouton-historique').on('click', function () {
+                    console.log("Redirection vers l'historique des consultations.");
+                    window.location.href = 'historique.html';
+                });
+
+                $('#bouton-voir-liste').on('click', function () {
+                    console.log("Redirection vers la liste des mediums.");
+                    window.location.href = 'listeMedium.html';
+                });
             });
         </script>
     </body>

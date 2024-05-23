@@ -29,11 +29,9 @@ public class PrevisualiserConsultationClientAction extends Action {
         HttpSession session = request.getSession(true);
         Long idEmploye = (Long) session.getAttribute("idEmploye");
         
-        request.setAttribute("idEploye", idEmploye);
         
         Consultation consultationEnCours = service.rechercherConsultationEnCoursEmploye(idEmploye);
         Client client = consultationEnCours.getClient();
-        request.setAttribute("idClient", client.getId());
 
         if (client != null) {      
             List<Consultation> consultations = client.getConsultations();

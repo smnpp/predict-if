@@ -66,8 +66,8 @@
                         dataType: 'json'
                     })
                             .done(function (response) {
-                                if (response.connexion) {
-                                    $('#notification').html("Enregistrement réussi de " + response.nom + " (" + response.id + ")");
+                                if (response) {
+                                    $('#notification').html("Enregistrement réussi)");
                                     window.location.href = 'index.html';
                                 } else {
                                     $('#notification').html("Erreur d'enregistrement");

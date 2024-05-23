@@ -48,10 +48,10 @@ public class InscriptionAction extends Action {
         String email = request.getParameter("email");
 
         Client client = new Client(nom, prenom, genre, email, password, telephone, adresse, date);
-        Boolean result = service.inscrireClient(client);
+        Boolean success = service.inscrireClient(client);
 
-        if (result) {
-            request.setAttribute("client", client);
+        if (success) {
+            request.setAttribute("success", success);
             System.out.println("[TEST] Client inscrit");
         } else {
             System.out.println("[TEST] Client inscrit échec");

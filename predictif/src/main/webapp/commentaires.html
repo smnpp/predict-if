@@ -1,77 +1,79 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Commentaires</title>
-    <meta charset="UTF-8">
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-</head>
-<body>
-    <h1>Predicti'IF - Commentaires</h1>
+    <head>
+        <title>Commentaires</title>
+        <meta charset="UTF-8">
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    </head>
+    <body>
+        <h1>Predicti'IF - Commentaires</h1>
 
-    <div id="nav-connecte">
-        <button id="bouton-accueil-connecte">Accueil</button> <br>
-        <button id="logout">Logout</button>
-    </div>
+        <div id="head-band">
+            <button id="bouton-accueil-connecte">Accueil</button>
+            <button id="logout">Déconnexion</button>
+        </div>
 
-    <div id="consultation-history"></div>
+        <div id="corps">
+            <div id="comment-history"></div>
+        </div>
 
-    <script>
-        $(document).ready(function () {
-            // Charger l'historique des consultations après la vérification de connexion
-            $.ajax({
-                url: './ActionServlet',
-                method: 'GET',
-                data: {
-                    todo: 'listerCommentaires'
-                },
-                dataType: 'json'
-            })
-            .done(function (response) {
-                console.log("listerCommentaires response:", response);
-                var commentHistory = $("#comment-history");
-                if (response.commentaires && response.commentaires.length > 0) {
-                    response.commentaires.forEach(function (commentaire) {
-                        var commentaireHtml = `<p>Commentaire: ${commentaire}</p>`;
-                        commentHistory.append(commentaireHtml);
-                    });
-                } else {
-                    commentHistory.html("<p>Aucun commentaire trouvé.</p>");
-                }
-            })
-            .fail(function (error) {
-                console.log('Error listerCommentaires', error); // LOG dans Console Javascript
-                console.log('Status: ' + error.status);
-                console.log('Response Text: ' + error.responseText);
-                $("#comment-history").html("<p>Erreur lors de la récupération des commentaires.</p>");
-            });
-
-            // Déconnexion lors du clic sur le bouton "Logout"
-            $('#logout').on('click', function () {
-                console.log("Logout clicked");
+        <script>
+            $(document).ready(function () {
+                // Charger l'historique des commentaires
                 $.ajax({
                     url: './ActionServlet',
-                    method: 'POST',
+                    method: 'GET',
                     data: {
-                        todo: 'deconnexion'
+                        todo: 'listerCommentaires'
                     },
                     dataType: 'json'
-                })
-                .done(function () {
-                    console.log("Logout successful");
+                }).done(function (response) {
+                    console.log("Réponse reçue pour 'listerCommentaires'.");
+                    var commentHistory = $("#comment-history");
+                    if (response.liste && response.liste.length > 0) {
+                        response.liste.forEach(function (comment) {
+                            var commentaireHtml = `<p>Commentaire: ${comment}</p>`;
+                            commentHistory.append(commentaireHtml);
+                        });
+                    } else {
+                        commentHistory.html("<p>Aucun commentaire trouvé.</p>");
+                    }
+                }).fail(function (error) {
+                    console.error('Échec de l\'appel AJAX pour lister les commentaires.', error);
+                    $("#comment-history").html("<p>Erreur lors de la récupération des commentaires.</p>");
+                });
+
+                // Gestion de la déconnexion
+                $('#logout').on('click', function () {
+                    console.log("Tentative de déconnexion...");
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {
+                            todo: 'deconnexion'
+                        },
+                        dataType: 'json'
+                    }).done(function (response) {
+                        if (response.success) {
+                            console.log("Déconnexion réussie.");
+                            localStorage.removeItem('commentValidated');
+                            window.location.href = 'index.html';
+                        } else {
+                            console.error("Échec de la déconnexion:", response.message);
+                            alert("Déconnexion échouée: " + response.message);
+                        }
+                    }).fail(function (error) {
+                        console.error('Erreur lors de la déconnexion:', error);
+                        alert("Erreur lors de l'appel AJAX: " + error.statusText);
+                    });
+                });
+
+                // Redirection vers la page d'accueil
+                $('#bouton-accueil-connecte').on('click', function () {
+                    console.log("Redirection vers la page d'accueil...");
                     window.location.href = 'index.html';
-                })
-                .fail(function (error) {
-                    console.log('Error deconnexion:', error); // LOG dans Console Javascript
-                    alert("Erreur lors de l'appel AJAX");
                 });
             });
-
-            // Redirection vers la page d'accueil lors du clic sur le bouton "Accueil"
-            $('#bouton-accueil-connecte').on('click', function () {
-                console.log("Redirect to index.html");
-                window.location.href = 'index.html';
-            });
-        });
-    </script>
-</body>
+        </script>
+    </body>
 </html>

@@ -2,68 +2,74 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Connexion</title>
+        <title>Connexion - Predicti'IF</title>
         <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     </head>
     <body>
         <h1>Predicti'IF - Connexion</h1>
-        <button id="bouton-accueil">Accueil</button>
-        <br/>
-        <!-- Sélection du type de connexion -->
-        <label for="user-type">Vous êtes :</label>
-        <select id="user-type" name="type">
-            <option value="client">Client</option>
-            <option value="employe">Employé</option>
-            
-        </select>
-        <br/>
 
-        <!-- Champs et Bouton de Formulaire -->
-        Email: <input type="text" id="champ-login" size="40" />
-        <br/>
-        Mot de passe: <input type="password" id="champ-password" />
-        <br/>
-        <button id="bouton-connexion">Login</button>
-        <br/>
-        <button id="bouton-register">Register</button>
+        <div id="head-bande">
+            <button id="bouton-accueil">Accueil</button>
+        </div>
+
+        <div id="login-form">
+            <label for="user-type">Vous êtes :</label>
+            <select id="user-type" name="type">
+                <option value="client">Client</option>
+                <option value="employe">Employé</option>
+            </select>
+            <br/>
+
+            Email: <input type="text" id="champ-login" size="40" />
+            <br/>
+            Mot de passe: <input type="password" id="champ-password" />
+            <br/>
+            <button id="bouton-connexion">Login</button>
+            <button id="bouton-register">Register</button>
+        </div>
 
         <script>
             $(document).ready(function () {
                 $('#bouton-connexion').on('click', function () {
-                    var userType = $('#user-type').val(); // Récupère le type de l'utilisateur
-                    var champLogin = $('#champ-login').val();
-                    var champPassword = $('#champ-password').val();
+                    var userType = $('#user-type').val();
+                    var login = $('#champ-login').val();
+                    var password = $('#champ-password').val();
 
-                    var todoValue = (userType === 'employe') ? 'connecterEmploye' : 'connecterClient';
+                    var actionType = (userType === 'employe') ? 'connecterEmploye' : 'connecterClient';
+                    console.log(`Tentative de connexion pour ${userType} avec l'email ${login}.`);
 
-                    // Appel AJAX pour la connexion
                     $.ajax({
                         url: './ActionServlet',
                         method: 'POST',
                         data: {
-                            todo: todoValue,
-                            login: champLogin,
-                            password: champPassword
+                            todo: actionType,
+                            login: login,
+                            password: password
                         },
                         dataType: 'json'
                     })
                     .done(function (response) {
-                        if (response.connexion) {
+                        if (response !== null) {
+                            console.log("Connexion réussie, redirection vers la page d'accueil.");
                             window.location.href = 'index.html';
                         } else {
-                            $('#notification').html("Erreur de Connexion");
+                            console.log("Échec de la connexion: ", response.message);
+                            $('#notification').html("Erreur de Connexion: " + response.message);
                         }
                     })
                     .fail(function (error) {
-                        console.log('Error', error);
+                        console.error("Erreur lors de la tentative de connexion: ", error.statusText);
                         alert("Erreur lors de l'appel AJAX");
                     });
                 });
 
                 $('#bouton-register').on('click', function () {
+                    console.log("Redirection vers la page d'inscription.");
                     window.location.href = 'register.html';
                 });
+
                 $('#bouton-accueil').on('click', function () {
+                    console.log("Redirection vers la page d'accueil.");
                     window.location.href = 'index.html';
                 });
             });

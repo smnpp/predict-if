@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Consultation en cours...</title>
+        <meta charset="UTF-8">
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    </head>
+    <body>
+        <h1>Consultation</h1>
+
+        <div id="head-band">
+            <button id="bouton-prediction">Prédiction</button>
+            <button id="logout">Déconnexion</button>
+            <button id="bouton-fin-consultation">Fin de la consultation</button>
+            <button id="bouton-profil-client">Profil astral du client</button>
+        </div>
+
+        <div id="corps">
+            <div id="zone-commentaire" style="display:none;">
+                <input type="text" id="champ-commentaire" size="40" />
+                <button id="bouton-validation">Valider le commentaire</button>
+            </div>
+        </div>
+
+        <script>
+            $(document).ready(function () {
+                var idConsult = 0;
+
+                // Initialisation de l'affichage basé sur le statut du commentaire
+                if (localStorage.getItem('commentValidated') !== 'true') {
+                    $('#zone-commentaire').show();
+                }
+
+                // Récupération de l'identifiant de la consultation en cours
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'GET',
+                    data: {todo: 'afficherConsultationEnCoursEmploye'},
+                    dataType: 'json'
+                }).done(function (response) {
+                    if (response.idConsultation) {
+                        idConsult = response.idConsultation;
+                        console.log("Consultation chargée avec l'ID:", idConsult);
+                    }
+                }).fail(function (error) {
+                    console.error("Erreur lors du chargement de la consultation en cours:", error);
+                });
+
+                // Validation du commentaire
+                $('#bouton-validation').on('click', function () {
+                    var champCommentaire = $('#champ-commentaire').val();
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {
+                            todo: 'validerCommentaire',
+                            commentaire: champCommentaire,
+                            idConsultation: idConsult
+                        },
+                        dataType: 'json'
+                    })
+                    .done(function (response) {
+                        if (response) {
+                            console.log("Commentaire validé et enregistré.");
+                            $('#zone-commentaire').hide();
+                            localStorage.setItem('commentValidated', 'true');
+                        } else {
+                            console.log("Erreur lors de la validation du commentaire.");
+                        }
+                    })
+                    .fail(function (error) {
+                        console.error("Erreur lors de la validation du commentaire:", error);
+                    });
+                });
+
+                // Fin de la consultation
+                $('#bouton-fin-consultation').on('click', function () {
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {
+                            todo: 'terminerConsultation',
+                            idConsultation: idConsult
+                        },
+                        dataType: 'json'
+                    })
+                    .done(function (response) {
+                        if (response) {
+                            console.log("Consultation terminée avec succès.");
+                            localStorage.removeItem('commentValidated');
+                            window.location.href = 'index.html';
+                        } else {
+                            console.log("Erreur lors de la terminaison de la consultation.");
+                        }
+                    })
+                    .fail(function (error) {
+                        console.error("Erreur lors de la terminaison de la consultation:", error);
+                    });
+                });
+
+                // Déconnexion
+                $('#logout').on('click', function () {
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {
+                            todo: 'deconnexion'
+                        },
+                        dataType: 'json'
+                    })
+                    .done(function (response) {
+                        if (response.success) {
+                            console.log("Déconnexion réussie.");
+                            localStorage.removeItem('commentValidated');
+                            window.location.href = 'index.html';
+                        } else {
+                            console.log("Échec de la déconnexion:", response.message);
+                            alert("Déconnexion échouée: " + response.message);
+                        }
+                    })
+                    .fail(function (error) {
+                        console.error("Erreur lors de la déconnexion:", error);
+                    });
+                });
+
+                $('#bouton-profil-client').on('click', function () {
+                    console.log("Redirection vers le profil astral du client...");
+                    window.location.href = 'profilClientEnConsultation.html';
+                });
+
+                $('#bouton-prediction').on('click', function () {
+                    console.log("Redirection vers la page de prédiction...");
+                    window.location.href = 'prediction.html';
+                });
+            });
+        </script>
+
+    </body>
+</html>

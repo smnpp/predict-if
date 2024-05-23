@@ -5,6 +5,7 @@ import modele.Client;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import modele.Client;
+import modele.ProfilAstral;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -31,19 +32,28 @@ public class AuthentifierClientAction extends Action {
         
         Client client = new Client();
         client = service.authentifierClient(login, password);
+        ProfilAstral astral = client.getProfilAstral();
         
         if (client != null) {
             HttpSession session = request.getSession(true);
             session.setAttribute("idClient", client.getId());
             session.setAttribute("idEmploye", null);
             
-            request.setAttribute("idClient", client.getId());
-            request.setAttribute("idEmploye", null);
+            request.setAttribute("client", client);
+            request.setAttribute("employe", null);
+            
+            if (astral != null){
+                request.setAttribute("astral", astral);
+            }   
+            else {
+                request.setAttribute("astral", null);
+            }
             System.out.println("[TEST] Client authentifier");
         }
         else {
-            request.setAttribute("idClient", null);
-            request.setAttribute("idEmploye", null);
+            request.setAttribute("client", null);
+            request.setAttribute("astral", null);
+            request.setAttribute("employe", null);
             System.out.println("[TEST] Client échouée");
         }   
     } 

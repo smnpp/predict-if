@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Consultation en cours...</title>
+        <meta charset="UTF-8">
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    </head>
+    <body>
+        <h1>Consultation</h1>
+
+        <div id="head-bande">
+            <button id="bouton-consultation">Consultation en cours</button> <br>
+            <button id="logout">Logout</button>
+        </div>
+
+        <div id ="zone-note">
+            <input id="amour" type="range" min="0" max="3" step="1" value="0"> <br>
+            <input id="sante" type="range" min="0" max="3" step="1" value="0"><br>
+            <input id="travail" type="range" min="0" max="3" step="1" value="0"><br>
+            <button id="bouton-obtenir-prediction">Obtenir prédiction !</button>
+        </div>
+        <div id="zone-prediction"></div>
+
+        <div id="modal-prediction" style="display:none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 999;">
+            <div style="background-color: white; margin: 10% auto; padding: 20px; border-radius: 10px; width: 50%;">
+                <h2>Prédictions</h2>
+                <div id="prediction-content">
+                    <!-- Les prédictions seront injectées ici -->
+                </div>
+                <button onclick="$('#modal-prediction').hide();">Fermer</button>
+            </div>
+        </div>
+
+
+        <script>
+            $(document).ready(function () {
+                var idConsult = 0;
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'GET',
+                    data: {todo: 'afficherConsultationEnCoursEmploye'},
+                    dataType: 'json'
+                }).done(function (response) {
+                    if (response.idConsultation) {
+                        idConsult = response.idConsultation;
+                    }
+                }).fail(function (error) {
+                    console.log('Error afficherConsultationEnCoursEmploye', error);
+                });
+
+                $('#bouton-obtenir-prediction').on('click', function () {
+                    var noteAmour = $('#amour').val();
+                    var noteSante = $('#sante').val();
+                    var noteTravail = $('#travail').val();
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {
+                            todo: 'obtenirPredictions',
+                            idConsultation: idConsult,
+                            amour: noteAmour,
+                            sante: noteSante,
+                            travail: noteTravail
+                        },
+                        dataType: 'json'
+                    })
+                            .done(function (response) {
+                                var content = $("#prediction-content");
+                                content.empty(); // Nettoie le contenu précédent
+                                if (response.liste && response.liste.length === 3) {
+                                    content.append(`<p>Amour: ${response.liste[0]}</p>`);
+                                    content.append(`<p>Santé: ${response.liste[1]}</p>`);
+                                    content.append(`<p>Travail: ${response.liste[2]}</p>`);
+                                } else {
+                                    content.html("<p>Aucune prédiction trouvée ou prédiction incomplète.</p>");
+                                }
+                                $('#modal-prediction').show(); // Affiche la fenêtre modale
+                            })
+                            .fail(function (error) {
+                                console.log('Error obtenirPredictions:', error);
+                                alert("Erreur lors de l'appel AJAX");
+                            });
+                });
+
+                $('#logout').on('click', function () {
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {
+                            todo: 'deconnexion'
+                        },
+                        dataType: 'json'
+                    })
+                            .done(function (response) {
+                                if (response.success) {
+                                    console.log("Logout successful");
+                                    localStorage.removeItem('commentValidated'); // Ensure the local storage is cleared on logout
+                                    window.location.href = 'index.html';
+                                } else {
+                                    console.log("Logout failed: " + response.message);
+                                    alert("Déconnexion échouée: " + response.message);
+                                }
+                            })
+                            .fail(function (error) {
+                                console.log('Error deconnexion:', error);
+                                alert("Erreur lors de l'appel AJAX: " + error.statusText);
+                            });
+                });
+
+                $('#bouton-consultation').on('click', function () {
+                    window.location.href = 'consultation.html';
+                });
+            });
+        </script>
+    </body>
+</html>
