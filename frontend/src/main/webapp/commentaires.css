@@ -1,0 +1,82 @@
+body {
+    font-family: 'Arial', sans-serif;
+    color: black;
+    background-color: #FFFFFF;
+    margin: 0;
+    padding: 0;
+}
+
+#header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #4B0082;
+}
+
+#logo1 {
+    width: 120px;
+    margin-left: 20px;
+}
+
+.nav-button {
+    background-color: #D3CCE3;
+    color: black;
+    border: none;
+    padding: 12px 24px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 0 10px;
+}
+
+.hero {
+    text-align: center;
+    padding: 20px 0;
+    background-color: #E6E6FA;
+    margin-bottom: 20px;
+}
+
+.hero h1 {
+    font-size: 36px;
+    color: black;
+}
+
+#comment-history {
+    width: 80%;
+    margin: 0 auto;
+}
+
+.comment-card {
+    display: flex;
+    background-color: #E6E6FA;
+    border-radius: 10px;
+    margin: 20px 0;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.comment-author {
+    width: 20%;
+    padding-right: 20px;
+}
+
+.comment-author p {
+    background-color: #D3CCE3;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+.comment-content {
+    width: 80%;
+    background-color: #FFD700;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.comment-content p {
+    margin: 0;
+}

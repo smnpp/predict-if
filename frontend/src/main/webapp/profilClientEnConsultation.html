@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Client Details</title>
+    <link href="profilClientEmploye.css" rel="stylesheet" type="text/css">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+    <div id="header">
+        <img src="logo1.png" alt="Logo" id="logo1">
+        <div id="nav-connecte">
+            <button class="nav-button" id="bouton-consultation">Consultation en cours</button>
+            <button class="nav-button" id="bouton-prediction">Prédiction</button>
+            <button class="nav-button" id="logout">Se déconnecter</button>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>Client: <span id="prenom"></span> <span id="nom"></span></h1>
+    </div>
+
+    <div id="content-container">
+        <div id="consultation-history">
+            <h3>Anciennes consultations</h3>
+        </div>
+        <div id="profil-info">
+            <h3>Profil Astral</h3>
+            <div class="profil-section">
+                <img id="animal-img" src="totem.png" alt="Animal Totem">
+                <p>Animal Totem : <span id="animal"></span></p>
+            </div>
+            <div class="profil-section">
+                <img id="zodiaque-img" src="zodiaque.png" alt="Signe du Zodiaque">
+                <p>Signe du zodiaque : <span id="zodiaque"></span></p>
+            </div>
+            <div class="profil-section">
+                <img id="couleur-img" src="couleurs.png" alt="Couleur">
+                <p>Couleur : <span id="couleur"></span></p>
+            </div>
+            <div class="profil-section">
+                <img id="chinois-img" src="chinois.png" alt="Signe Chinois">
+                <p>Signe chinois : <span id="chinois"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            let availableImages = [];
+            for (let i = 1; i <= 21; i++) {
+                availableImages.push('medium' + i + '.png');
+            }
+
+            function getUniqueRandomImage() {
+                if (availableImages.length === 0) {
+                    return null;
+                }
+                const randomIndex = Math.floor(Math.random() * availableImages.length);
+                const selectedImage = availableImages[randomIndex];
+                availableImages.splice(randomIndex, 1);
+                return selectedImage;
+            }
+
+            $.ajax({
+                url: './ActionServlet',
+                method: 'GET',
+                data: { todo: 'previsualiserProfilClient' },
+                dataType: 'json'
+            })
+            .done(function (response) {
+                if (response) {
+                    $('#nom').text(response.client.nom);
+                    $('#prenom').text(response.client.prenom);
+                    $('#animal').text(response.client.animal);
+                    $('#zodiaque').text(response.client.zodiaque);
+                    $('#couleur').text(response.client.couleur);
+                    $('#chinois').text(response.client.chinois);
+                } else {
+                    $('#profil-info').html("<p>Erreur lors du chargement des informations du profil.</p>");
+                }
+            })
+            .fail(function () {
+                $('#profil-info').html("<p>Erreur lors de la communication avec le serveur.</p>");
+            });
+
+            $.ajax({
+                url: './ActionServlet',
+                method: 'GET',
+                data: { todo: 'previsualiserConsultationClient' },
+                dataType: 'json'
+            })
+            .done(function (response) {
+                var consultationHistory = $("#consultation-history");
+                if (response.consultations && response.consultations.length > 0) {
+                    response.consultations.forEach(function (consultation) {
+                        const imageUrl = getUniqueRandomImage();
+                        var consultationHtml = `<div class="consultation-card">
+                            <div class="consultation-date">${consultation.date}</div>
+                            <div class="consultation-content">
+                                <img src="${imageUrl}" alt="${consultation.denominationMedium}" class="medium-img">
+                                <div class="consultation-details">
+                                    <p>Medium Sélectionné: ${consultation.denominationMedium}</p>
+                                    <p>Type: ${consultation.type}</p>
+                                    <p>Genre: ${consultation.genre}</p>
+                                </div>
+                            </div>
+                        </div>`;
+                        consultationHistory.append(consultationHtml);
+                    });
+                } else {
+                    consultationHistory.html("<p>Aucune consultation trouvée.</p>");
+                }
+            })
+            .fail(function () {
+                $("#consultation-history").html("<p>Erreur lors de la récupération des consultations.</p>");
+            });
+
+            // Déconnexion
+            $('#logout').on('click', function () {
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'POST',
+                    data: { todo: 'deconnexion' },
+                    dataType: 'json'
+                })
+                .done(function (response) {
+                    if (response.success) {
+                        window.location.href = 'index.html';
+                    } else {
+                        alert("Déconnexion échouée: " + response.message);
+                    }
+                })
+                .fail(function (error) {
+                    alert("Erreur lors de l'appel AJAX: " + error.statusText);
+                });
+            });
+
+            $('#bouton-consultation').on('click', function () {
+                window.location.href = 'consultation.html';
+            });
+
+            $('#bouton-prediction').on('click', function () {
+                window.location.href = 'prediction.html';
+            });
+        });
+    </script>
+</body>
+</html>

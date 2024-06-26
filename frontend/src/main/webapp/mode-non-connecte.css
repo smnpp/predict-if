@@ -1,0 +1,59 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 24 mai 2024, 15:15:46
+    Author     : sperret
+*/
+
+body.mode-non-connecte {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #FFFFFF; /* fond blanc uniforme */
+}
+
+.logo.mode-non-connecte {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 80px;
+    height: 80px;
+    background-image: url('logo1.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.home-button.mode-non-connecte {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: #D3B3E5; /* violet clair pour le bouton d'accueil */
+}
+
+.container.mode-non-connecte {
+    text-align: center;
+}
+
+.select-user-type.mode-non-connecte {
+    margin-bottom: 20px;
+}
+
+.form-group.mode-non-connecte {
+    margin-bottom: 15px;
+}
+
+.form-label.mode-non-connecte {
+    background-color: #ADD8E6; /* bleu clair pour les étiquettes de formulaire */
+}
+
+.form-input.mode-non-connecte {
+    border: 1px solid #ccc;
+}
+
+.form-button.mode-non-connecte {
+    background-color: #D3D3D3; /* gris clair pour les boutons de formulaire */
+}

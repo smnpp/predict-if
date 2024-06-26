@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Historique des Consultations</title>
+        <link href="historique.css" rel="stylesheet" type="text/css">
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    </head>
+    <body>
+        <div class="logo"></div>
+        <div id="header">
+            <img src="logo1.png" alt="Logo" id="logo1">
+
+            <div id="nav-connecte">
+                <button class="nav-button" id="bouton-voir-liste">Voir liste des mediums</button>
+                <button class="nav-button" id="bouton-profil">Profil astral</button>
+                <button class="nav-button" id="bouton-accueil-connecte">Accueil</button>
+                <button class="nav-button" id="logout">Déconnexion</button>
+            </div>
+        </div>
+
+        <div class="hero">
+            <h1>Historique de vos consultations</h1>
+        </div>
+
+        <div id="consultation-history"></div>
+
+        <div id="no-consultation-popup" style="display:none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 999;">
+            <div style="background-color: #FFD700; margin: 20% auto; padding: 20px; border-radius: 10px; width: 50%; text-align: center;">
+                <h2>Aucune consultation effectuée</h2>
+                <button onclick="$('#no-consultation-popup').hide();">Fermer</button>
+            </div>
+        </div>
+
+        <script>
+            $(document).ready(function () {
+                // Récupération et affichage de l'historique des consultations
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'GET',
+                    data: {todo: 'listerConsultations'},
+                    dataType: 'json'
+                })
+                        .done(function (response) {
+                            console.log("Réponse reçue pour 'listerConsultations'.");
+                            var consultationHistory = $("#consultation-history");
+                            if (response.consultations && response.consultations.length > 0) {
+                                response.consultations.forEach(function (consultation) {
+                                    var consultationHtml = `
+                                <div class="consultation-card">
+                                    <div class="consultation-date">
+                                        ${consultation.date}
+                                    </div>
+                                    <div class="consultation-content">
+                                        <img src="${getUniqueRandomImage()}" alt="${consultation.denominationMedium}" class="medium-img">
+                                        <div class="consultation-details">
+                                            <p>MEDIUM SELECTIONNE: ${consultation.denominationMedium}</p>
+                                            <p>TYPE: ${consultation.type}</p>
+                                            <p>GENRE: ${consultation.genre}</p>
+                                        </div>
+                                    </div>
+                                </div>`;
+                                    consultationHistory.append(consultationHtml);
+                                });
+                            } else {
+                                $('#no-consultation-popup').show();
+                            }
+                        })
+                        .fail(function (error) {
+                            console.error('Échec de l\'appel AJAX pour lister les consultations:', error);
+                            $("#consultation-history").html("<p>Erreur lors de la récupération des consultations.</p>");
+                        });
+
+                // Gestion de la déconnexion
+                $('#logout').on('click', function () {
+                    console.log("Tentative de déconnexion...");
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {todo: 'deconnexion'},
+                        dataType: 'json'
+                    })
+                            .done(function (response) {
+                                if (response.success) {
+                                    console.log("Déconnexion réussie.");
+                                    window.location.href = 'index.html';
+                                } else {
+                                    console.error("Échec de la déconnexion:", response.message);
+                                    alert("Déconnexion échouée: " + response.message);
+                                }
+                            })
+                            .fail(function (error) {
+                                console.error('Erreur lors de la déconnexion:', error);
+                                alert("Erreur lors de l'appel AJAX: " + error.statusText);
+                            });
+                });
+
+                // Redirections
+                $('#bouton-accueil-connecte').on('click', function () {
+                    console.log("Redirection vers la page d'accueil.");
+                    window.location.href = 'index.html';
+                });
+
+                $('#bouton-profil').on('click', function () {
+                    console.log("Redirection vers le profil astral.");
+                    window.location.href = 'profilAstral.html';
+                });
+
+                $('#bouton-voir-liste').on('click', function () {
+                    console.log("Redirection vers la liste des mediums.");
+                    window.location.href = 'listeMedium.html';
+                });
+            });
+
+            let availableImages = [];
+            for (let i = 1; i <= 21; i++) {
+                availableImages.push('medium' + i + '.png');
+            }
+
+            function getUniqueRandomImage() {
+                if (availableImages.length === 0) {
+                    return null;
+                }
+                const randomIndex = Math.floor(Math.random() * availableImages.length);
+                const selectedImage = availableImages[randomIndex];
+                availableImages.splice(randomIndex, 1); 
+                return selectedImage;
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Commentaires</title>
+    <link href="commentaires.css" rel="stylesheet" type="text/css">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+    <div id="header">
+        <img src="logo1.png" alt="Logo" id="logo1">
+        <div id="nav-connecte">
+            <button class="nav-button" id="bouton-accueil-connecte">Accueil</button>
+            <button class="nav-button" id="logout">Déconnexion</button>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>Predicti'IF - Commentaires</h1>
+    </div>
+
+    <div id="comment-history"></div>
+
+    <script>
+        $(document).ready(function () {
+            // Charger l'historique des commentaires
+            $.ajax({
+                url: './ActionServlet',
+                method: 'GET',
+                data: {
+                    todo: 'listerCommentaires'
+                },
+                dataType: 'json'
+            }).done(function (response) {
+                console.log("Réponse reçue pour 'listerCommentaires'.");
+                var commentHistory = $("#comment-history");
+                if (response.liste && response.liste.length > 0) {
+                    response.liste.forEach(function (comment) {
+                        var commentaireHtml = `
+                        <div class="comment-card">
+                            <div class="comment-content">
+                                <p>${comment}</p>
+                            </div>
+                        </div>`;
+                        commentHistory.append(commentaireHtml);
+                    });
+                } else {
+                    commentHistory.html("<p>Aucun commentaire trouvé.</p>");
+                }
+            }).fail(function (error) {
+                console.error('Échec de l\'appel AJAX pour lister les commentaires.', error);
+                $("#comment-history").html("<p>Erreur lors de la récupération des commentaires.</p>");
+            });
+
+            // Gestion de la déconnexion
+            $('#logout').on('click', function () {
+                console.log("Tentative de déconnexion...");
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'POST',
+                    data: {
+                        todo: 'deconnexion'
+                    },
+                    dataType: 'json'
+                }).done(function (response) {
+                    if (response.success) {
+                        console.log("Déconnexion réussie.");
+                        localStorage.removeItem('commentValidated');
+                        window.location.href = 'index.html';
+                    } else {
+                        console.error("Échec de la déconnexion:", response.message);
+                        alert("Déconnexion échouée: " + response.message);
+                    }
+                }).fail(function (error) {
+                    console.error('Erreur lors de la déconnexion:', error);
+                    alert("Erreur lors de l'appel AJAX: " + error.statusText);
+                });
+            });
+
+            // Redirection vers la page d'accueil
+            $('#bouton-accueil-connecte').on('click', function () {
+                console.log("Redirection vers la page d'accueil...");
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+</body>
+</html>

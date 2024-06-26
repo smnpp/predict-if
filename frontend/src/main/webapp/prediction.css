@@ -1,0 +1,167 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #FFFFFF;
+}
+
+#header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #4B0082;
+    color: white;
+}
+
+#logo1 {
+    height: 60px;
+}
+
+#nav-connecte {
+    display: flex;
+    gap: 10px;
+}
+
+.nav-button {
+    background-color: #D3CCE3;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+#banner {
+    width: 100%;
+    height: auto;
+}
+
+.hero {
+    text-align: center;
+    padding: 50px 0;
+    background-color: #E6E6FA;
+    margin-bottom: 20px;
+}
+
+.hero h1 {
+    font-size: 36px;
+    color: #4B0082;
+}
+
+#zone-note {
+    width: 60%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.note-section {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.note-section img {
+    width: 50px;
+    height: 50px;
+    margin-right: 20px;
+}
+
+.stars {
+    display: inline-block;
+}
+
+.star {
+    font-size: 30px;
+    color: #ccc; 
+    cursor: pointer;
+    transition: color 0.2s;
+    border: black; 
+    padding: 5px; 
+    margin-right: 5px; 
+}
+
+.star.selected, .star:hover, .star:hover ~ .star {
+    color: #FFD700;
+}
+
+.star:hover ~ .star {
+    color: #ccc;
+}
+
+#bouton-obtenir-prediction {
+    background-color: #D3CCE3;
+    color: black;
+    border: none;
+    padding: 12px 24px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+#modal-prediction {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 999;
+}
+
+.modal-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 50%;
+    text-align: center;
+}
+
+#close-modal {
+    background-color: #D3CCE3;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+.prediction-section {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.prediction-section:nth-child(1) {
+    background-color: #FAD4D4;
+}
+
+.prediction-section:nth-child(2) {
+    background-color: #FADADD;
+}
+
+.prediction-section:nth-child(3) {
+    background-color: #FAE4D4;
+}
+
+.prediction-section img {
+    width: 50px;
+    height: 50px;
+    margin-right: 20px;
+}

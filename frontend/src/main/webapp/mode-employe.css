@@ -1,0 +1,36 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 24 mai 2024, 15:15:14
+    Author     : sperret
+*/
+
+body.mode-employe {
+    background-color: #FFFFFF; /* fond blanc pour le mode employé */
+}
+
+#header.mode-employe {
+    background-color: #4B0082; /* un fond violet plus foncé pour le header */
+}
+
+.nav-button.mode-employe {
+    background-color: #D3CCE3; /* des boutons dans les tons violets clairs */
+}
+
+.hero.mode-employe {
+    background-color: #E6E6FA; /* fond du hero dans les tons violets clairs */
+    color: black;
+}
+
+#comment-history.mode-employe {
+    background-color: #FFFFFF; /* fond blanc pour l'historique des commentaires */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* légère ombre pour la distinction */
+}
+
+.comment-card.mode-employe {
+    background-color: #E6E6FA; /* fond violet clair pour chaque carte de commentaire */
+    border-color: #D3CCE3; /* bordure dans un ton de violet */
+}

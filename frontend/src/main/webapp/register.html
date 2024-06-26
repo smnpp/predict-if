@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <link href="register.css" rel="stylesheet" type="text/css">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+    <div class="logo"></div>
+    <button class="home-button" id="bouton-accueil">Accueil</button>
+    <div class="container">
+        <div class="form-group">
+            <label class="form-label" for="champ-nom">Nom</label>
+            <input type="text" id="champ-nom" class="form-input" size="40" />
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="champ-prenom">Prénom</label>
+            <input type="text" id="champ-prenom" class="form-input" />
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="champ-telephone">Téléphone</label>
+            <input type="text" id="champ-telephone" class="form-input" size="40" />
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="champ-adresse">Adresse</label>
+            <input type="text" id="champ-adresse" class="form-input" size="40" />
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="champ-email">E-mail</label>
+            <input type="text" id="champ-email" class="form-input" size="40" />
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="champ-mdp">Mot de passe</label>
+            <input type="password" id="champ-mdp" class="form-input" size="40" />
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="champ-date">Date de naissance</label>
+            <input type="date" id="champ-date" class="form-input" size="40" min="1900-01-01" />
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="champ-genre">Genre</label>
+            <input type="text" id="champ-genre" class="form-input" size="40" />
+        </div>
+        <button class="form-button" id="bouton-register">Register</button>
+    </div>
+
+        <script>
+            $(document).ready(function () {
+                var today = new Date().toISOString().split('T')[0];
+                $('#champ-date').attr('max', today);
+
+                $('#bouton-register').on('click', function () {
+                    var champNom = $('#champ-nom').val();
+                    var champPrenom = $('#champ-prenom').val();
+                    var champTelephone = $('#champ-telephone').val();
+                    var champAdresse = $('#champ-adresse').val();
+                    var champEmail = $('#champ-email').val();
+                    var champPassword = $('#champ-mdp').val();
+                    var champDate = $('#champ-date').val();
+                    var champGenre = $('#champ-genre').val();
+
+                    var dateParts = champDate.split("-");
+                    var dateReformated = dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0];
+
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {
+                            todo: 'register',
+                            nom: champNom,
+                            prenom: champPrenom,
+                            telephone: champTelephone,
+                            adresse: champAdresse,
+                            email: champEmail,
+                            password: champPassword,
+                            date: dateReformated,
+                            genre: champGenre
+                        },
+                        dataType: 'json'
+                    })
+                            .done(function (response) {
+                                if (response.success === true) {
+                                    $('#notification').html("Enregistrement réussi)");
+                                    window.location.href = 'login.html';
+                                } else {
+                                    console.log('Error', error);
+                                    alert("Erreur d'inscription, veuillez réessayer...");
+                                    $('#notification').html("Erreur d'enregistrement");
+                                }
+                            })
+                            .fail(function (error) {
+                                console.error('Error', error.statusText);
+                                alert("Erreur lors de l'appel AJAX");
+                            });
+                });
+
+                $('#bouton-accueil').on('click', function () {
+                    window.location.href = 'index.html';
+                });
+            });
+        </script>
+    </body>
+</html>

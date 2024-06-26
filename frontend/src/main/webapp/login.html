@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+    
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Connexion</title>
+        <link href="login.css" rel="stylesheet" type="text/css">
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    </head>
+    
+    <body>
+        
+        <div class="logo"></div>
+        
+        <button class="home-button" id="bouton-accueil">Accueil</button>
+        
+        <div class="container">
+            
+            <div class="select-user-type">
+                <label for="user-type">Vous êtes :</label>
+                <select id="user-type" name="type" class="form-input">
+                    <option value="client">Client</option>
+                    <option value="employe">Employé</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="champ-login">E-mail</label>
+                <input type="text" id="champ-login" class="form-input" />
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="champ-password">Mot de passe</label>
+                <input type="password" id="champ-password" class="form-input" />
+            </div>
+            
+            <button class="form-button" id="bouton-connexion">Login</button>
+            
+            <button class="form-button" id="bouton-register">Register</button>
+        </div>
+
+        <script>
+            $(document).ready(function () {
+                $('#bouton-connexion').on('click', function () {
+                    var userType = $('#user-type').val();
+                    var login = $('#champ-login').val();
+                    var password = $('#champ-password').val();
+
+                    var actionType = (userType === 'employe') ? 'connecterEmploye' : 'connecterClient';
+                    console.log(`Tentative de connexion pour ${userType} avec l'email ${login}.`);
+
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {
+                            todo: actionType,
+                            login: login,
+                            password: password
+                        },
+                        dataType: 'json'
+                    })
+                    .done(function (response) {
+                        if (response && response.connexion !== false) {
+                            console.log("Connexion réussie, redirection vers la page d'accueil.");
+                            window.location.href = 'index.html';
+                        } else {
+                            console.log("Échec de la connexion: ", response.message);
+                            $('#notification').html("Erreur de Connexion: " + response.message);
+                        }
+                    })
+                    .fail(function (error) {
+                        console.error("Erreur lors de la tentative de connexion: ", error.statusText);
+                        alert("Erreur de connexion");
+                    });
+                });
+
+                $('#bouton-register').on('click', function () {
+                    console.log("Redirection vers la page d'inscription.");
+                    window.location.href = 'register.html';
+                });
+
+                $('#bouton-accueil').on('click', function () {
+                    console.log("Redirection vers la page d'accueil.");
+                    window.location.href = 'index.html';
+                });
+            });
+        </script>
+    </body>
+</html>

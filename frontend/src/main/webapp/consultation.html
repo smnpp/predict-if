@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Consultation en cours...</title>
+    <link href="consultation.css" rel="stylesheet" type="text/css">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+    <div id="header">
+        <img src="logo1.png" alt="Logo" id="logo1">
+        <div id="nav-connecte">
+            <button class="nav-button" id="bouton-prediction">Prédiction</button>
+            <button class="nav-button" id="logout">Déconnexion</button>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>Client: <span id="client-nom"></span> <span id="client-prenom"></span></h1>
+    </div>
+
+    <div class="buttons-container">
+        <button class="action-button" id="bouton-fin-consultation">Fin consultation</button>
+        <button class="action-button" id="bouton-profil-client">Voir le profil astral client et son historique</button>
+    </div>
+
+    <div id="corps">
+        <textarea id="champ-commentaire" placeholder="Laissez un commentaire sur cette consultation.." disabled></textarea>
+        <button id="bouton-validation" disabled>Valider le commentaire</button>
+    </div>
+
+    <div id="modal-confirmation" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>Commentaire validé avec succès!</p>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            let idConsult = null;
+
+            // Récupération de l'identifiant de la consultation en cours
+            $.ajax({
+                url: './ActionServlet',
+                method: 'GET',
+                data: { todo: 'afficherConsultationEnCoursEmploye' },
+                dataType: 'json'
+            }).done(function (response) {
+                if (response.idConsultation) {
+                    idConsult = response.idConsultation;
+                    $('#client-nom').text(response.client.nom);
+                    $('#client-prenom').text(response.client.prenom);
+                    console.log("Consultation chargée avec l'ID:", idConsult);
+                }
+            }).fail(function (error) {
+                console.error("Erreur lors du chargement de la consultation en cours:", error);
+            });
+
+            // Fin de la consultation
+            $('#bouton-fin-consultation').on('click', function () {
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'POST',
+                    data: {
+                        todo: 'terminerConsultation',
+                        idConsultation: idConsult
+                    },
+                    dataType: 'json'
+                })
+                .done(function (response) {
+                    if (response.success) {
+                        console.log("Consultation terminée avec succès.");
+                        $('#champ-commentaire').prop('disabled', false).css('background-color', '#fff');
+                        $('#bouton-validation').prop('disabled', false);
+                    } else {
+                        console.log("Erreur lors de la terminaison de la consultation.");
+                    }
+                })
+                .fail(function (error) {
+                    console.error("Erreur lors de la terminaison de la consultation:", error);
+                });
+            });
+
+            // Validation du commentaire
+            $('#bouton-validation').on('click', function () {
+                var champCommentaire = $('#champ-commentaire').val();
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'POST',
+                    data: {
+                        todo: 'validerCommentaire',
+                        commentaire: champCommentaire,
+                        idConsultation: idConsult
+                    },
+                    dataType: 'json'
+                })
+                .done(function (response) {
+                    if (response.success) {
+                        console.log("Commentaire validé et enregistré.");
+                        $('#champ-commentaire').prop('disabled', true).css('background-color', '#e0e0e0');
+                        $('#bouton-validation').hide();
+                        localStorage.setItem('commentValidated', 'true');
+                        showModal();
+                    } else {
+                        console.log("Erreur lors de la validation du commentaire.");
+                    }
+                })
+                .fail(function (error) {
+                    console.error("Erreur lors de la validation du commentaire:", error);
+                });
+            });
+
+            // Déconnexion
+            $('#logout').on('click', function () {
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'POST',
+                    data: {
+                        todo: 'deconnexion'
+                    },
+                    dataType: 'json'
+                })
+                .done(function (response) {
+                    if (response.success) {
+                        console.log("Déconnexion réussie.");
+                        localStorage.removeItem('commentValidated');
+                        window.location.href = 'index.html';
+                    } else {
+                        console.log("Échec de la déconnexion:", response.message);
+                        alert("Déconnexion échouée: " + response.message);
+                    }
+                })
+                .fail(function (error) {
+                    console.error("Erreur lors de la déconnexion:", error);
+                });
+            });
+
+            $('#bouton-profil-client').on('click', function () {
+                console.log("Redirection vers le profil astral du client...");
+                window.location.href = 'profilClientEnConsultation.html';
+            });
+
+            $('#bouton-prediction').on('click', function () {
+                console.log("Redirection vers la page de prédiction...");
+                window.location.href = 'prediction.html';
+            });
+
+            // Fonction pour afficher le modal
+            function showModal() {
+                var modal = document.getElementById("modal-confirmation");
+                var span = document.getElementsByClassName("close")[0];
+
+                modal.style.display = "block";
+
+                span.onclick = function() {
+                    modal.style.display = "none";
+                    window.location.href = 'index.html';
+                }
+
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                        window.location.href = 'index.html';
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

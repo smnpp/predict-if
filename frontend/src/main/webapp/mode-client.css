@@ -1,0 +1,36 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 24 mai 2024, 15:14:49
+    Author     : sperret
+*/
+
+body.mode-client {
+    background-color: #FFFFFF; /* fond blanc pour le mode client */
+}
+
+#header.mode-client {
+    background-color: #E6E6FA; /* un fond plus clair pour le header */
+}
+
+.nav-button.mode-client {
+    background-color: #D3CCE3; /* des boutons dans les tons violets clairs */
+}
+
+.hero.mode-client {
+    background-color: #E6E6FA; /* fond du hero dans les tons violets clairs */
+    color: black;
+}
+
+#consultation-history.mode-client {
+    background-color: #FFFFFF; /* fond blanc pour l'historique des consultations */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* légère ombre pour la distinction */
+}
+
+.consultation-card.mode-client {
+    background-color: #E6E6FA; /* fond violet clair pour chaque carte de consultation */
+    border-color: #D3CCE3; /* bordure dans un ton de violet */
+}

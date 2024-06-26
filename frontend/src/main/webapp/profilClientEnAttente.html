@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Détails du Client</title>
+    <link href="profilClientEmploye.css" rel="stylesheet" type="text/css">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+    <div id="header">
+        <img src="logo1.png" alt="Logo" id="logo1">
+        <div id="nav-connecte">
+            <button class="nav-button" id="bouton-commentaires">Commentaires</button>
+            <button class="nav-button" id="bouton-accueil-connecte">Accueil</button>
+            <button class="nav-button" id="logout">Déconnexion</button>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>Client: <span id="prenom"></span> <span id="nom"></span></h1>
+    </div>
+
+    <div id="content-container">
+        <div id="consultation-history">
+            <h3>Anciennes consultations</h3>
+        </div>
+        <div id="profil-info">
+            <h3>Profil Astral</h3>
+            <div class="profil-section">
+                <img id="animal-img" src="totem.png" alt="Animal Totem">
+                <p>Animal Totem : <span id="animal"></span></p>
+            </div>
+            <div class="profil-section">
+                <img id="zodiaque-img" src="zodiaque.png" alt="Signe du Zodiaque">
+                <p>Signe du zodiaque : <span id="zodiaque"></span></p>
+            </div>
+            <div class="profil-section">
+                <img id="couleur-img" src="couleurs.png" alt="Couleur">
+                <p>Couleur : <span id="couleur"></span></p>
+            </div>
+            <div class="profil-section">
+                <img id="chinois-img" src="chinois.png" alt="Signe Chinois">
+                <p>Signe chinois : <span id="chinois"></span></p>
+            </div>
+        </div>
+    </div>
+    <button id="bouton-pret">Prêt</button>
+
+    <script>
+        $(document).ready(function () {
+            let availableImages = [];
+            for (let i = 1; i <= 21; i++) {
+                availableImages.push('medium' + i + '.png');
+            }
+
+            function getUniqueRandomImage() {
+                if (availableImages.length === 0) {
+                    return null;
+                }
+                const randomIndex = Math.floor(Math.random() * availableImages.length);
+                const selectedImage = availableImages[randomIndex];
+                availableImages.splice(randomIndex, 1);
+                return selectedImage;
+            }
+
+            function fetchConsultationEnCours() {
+                return $.ajax({
+                    url: './ActionServlet',
+                    method: 'GET',
+                    data: {todo: 'afficherConsultationEnCoursEmploye'},
+                    dataType: 'json'
+                });
+            }
+
+            function fetchProfilClient() {
+                return $.ajax({
+                    url: './ActionServlet',
+                    method: 'GET',
+                    data: {todo: 'previsualiserProfilClient'},
+                    dataType: 'json'
+                });
+            }
+
+            function fetchConsultationHistory() {
+                return $.ajax({
+                    url: './ActionServlet',
+                    method: 'GET',
+                    data: {todo: 'previsualiserConsultationClient'},
+                    dataType: 'json'
+                });
+            }
+
+            $.when(fetchConsultationEnCours(), fetchProfilClient(), fetchConsultationHistory()).done(
+                function (consultationResponse, profilResponse, historyResponse) {
+                    if (consultationResponse[0].idConsultation) {
+                        idConsult = consultationResponse[0].idConsultation;
+                    }
+
+                    if (profilResponse[0]) {
+                        $('#nom').text(profilResponse[0].client.nom);
+                        $('#prenom').text(profilResponse[0].client.prenom);
+                        $('#animal').text(profilResponse[0].client.animal);
+                        $('#zodiaque').text(profilResponse[0].client.zodiaque);
+                        $('#chinois').text(profilResponse[0].client.chinois);
+                        $('#couleur').text(profilResponse[0].client.couleur);
+                    }
+
+                    if (historyResponse[0].consultations && historyResponse[0].consultations.length > 0) {
+                        var consultationHistory = $("#consultation-history");
+                        historyResponse[0].consultations.forEach(function (consultation) {
+                            const imageUrl = getUniqueRandomImage();
+                            var consultationHtml = `<div class="consultation-card">
+                                <div class="consultation-date">${consultation.date}</div>
+                                <div class="consultation-content">
+                                    <img src="${imageUrl}" alt="${consultation.denominationMedium}" class="medium-img">
+                                    <div class="consultation-details">
+                                        <p>Medium Sélectionné: ${consultation.denominationMedium}</p>
+                                        <p>Type: ${consultation.type}</p>
+                                        <p>Genre: ${consultation.genre}</p>
+                                    </div>
+                                </div>
+                            </div>`;
+                            consultationHistory.append(consultationHtml);
+                        });
+                    } else {
+                        $("#consultation-history").html("<p>Aucune consultation trouvée.</p>");
+                    }
+                }
+            ).fail(function (error) {
+                console.error('Erreur lors de la récupération des informations.', error);
+            });
+
+            $('#logout').on('click', function () {
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'POST',
+                    data: {todo: 'deconnexion'},
+                    dataType: 'json'
+                }).done(function (response) {
+                    if (response.success) {
+                        window.location.href = 'index.html';
+                    } else {
+                        alert("Déconnexion échouée: " + response.message);
+                    }
+                }).fail(function (error) {
+                    alert("Erreur lors de l'appel AJAX: " + error.statusText);
+                });
+            });
+
+            $('#bouton-pret').on('click', function () {
+                if (idConsult) {
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {todo: 'etrePret', idConsultation: idConsult},
+                        dataType: 'json'
+                    }).done(function (response) {
+                        if (response.success) {
+                            window.location.href = 'consultation.html';
+                        } else {
+                            console.error('Erreur lors de l\'activation de l\'état prêt.');
+                        }
+                    }).fail(function (error) {
+                        alert("Erreur lors de l'appel AJAX pour être prêt.");
+                    });
+                } else {
+                    alert("ID de consultation introuvable. Veuillez réessayer.");
+                }
+            });
+
+            $('#bouton-commentaires').on('click', function () {
+                window.location.href = 'commentaires.html';
+            });
+
+            $('#bouton-accueil-connecte').on('click', function () {
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+</body>
+</html>

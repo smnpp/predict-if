@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Profil Client</title>
+    <link href="profilAstral.css" rel="stylesheet" type="text/css">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+    <div class="logo"></div>
+    <div id="header">
+        <img src="logo1.png" alt="Logo" id="logo1">
+
+        <div id="nav-connecte">
+            <button class="nav-button" id="bouton-voir-liste">Voir liste des mediums</button>
+            <button class="nav-button" id="bouton-historique">Historique</button>
+            <button class="nav-button" id="bouton-accueil-connecte">Accueil</button>
+            <button class="nav-button" id="logout">Déconnexion</button>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>Profil Astral de <span id="client-prenom"></span> <span id="client-nom"></span></h1>
+    </div>
+
+    <div id="profil-info">
+        <div class="profil-section">
+            <img id="animal-img" src="totem.png" alt="Animal Totem">
+            <p>Votre animal totem est le <span id="animal"></span>.</p>
+        </div>
+        <div class="profil-section">
+            <img id="zodiaque-img" src="zodiaque.png" alt="Signe du Zodiaque">
+            <p>Votre signe du zodiaque est <span id="zodiaque"></span>.</p>
+        </div>
+        <div class="profil-section">
+            <img id="couleur-img" src="couleurs.png" alt="Couleur">
+            <p>Votre couleur est le <span id="couleur"></span>.</p>
+        </div>
+        <div class="profil-section">
+            <img id="chinois-img" src="chinois.png" alt="Signe Chinois">
+            <p>Votre signe Chinois est <span id="chinois"></span>.</p>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            console.log("Chargement de la page de profil client.");
+
+            $.ajax({
+                url: './ActionServlet',
+                method: 'GET',
+                data: {todo: 'afficherProfilClient'},
+                dataType: 'json'
+            })
+            .done(function (response) {
+                if (response) {
+                    console.log("Profil client chargé avec succès.");
+                    $('#client-nom').text(response.client.nom);
+                    $('#client-prenom').text(response.client.prenom);
+                    $('#animal').text(response.client.animal);
+                    $('#zodiaque').text(response.client.zodiaque);
+                    $('#chinois').text(response.client.chinois);
+                    $('#couleur').text(response.client.couleur);
+                } else {
+                    console.log("Erreur lors du chargement des informations du profil client.");
+                    $('#profil-info').html("<p>Erreur lors du chargement des informations du profil.</p>");
+                }
+            })
+            .fail(function (error) {
+                console.error("Erreur de communication avec le serveur lors de la récupération du profil client.", error);
+                $('#profil-info').html("<p>Erreur lors de la communication avec le serveur.</p>");
+            });
+
+            $('#logout').on('click', function () {
+                console.log("Tentative de déconnexion...");
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'POST',
+                    data: {todo: 'deconnexion'},
+                    dataType: 'json'
+                })
+                .done(function (response) {
+                    if (response.success) {
+                        console.log("Déconnexion réussie.");
+                        window.location.href = 'index.html';
+                    } else {
+                        console.error("Échec de la déconnexion.", response.message);
+                        alert("Déconnexion échouée: " + response.message);
+                    }
+                })
+                .fail(function (error) {
+                    console.error('Erreur lors de la déconnexion.', error);
+                    alert("Erreur lors de l'appel AJAX: " + error.statusText);
+                });
+            });
+
+            $('#bouton-accueil-connecte').on('click', function () {
+                console.log("Redirection vers la page d'accueil.");
+                window.location.href = 'index.html';
+            });
+
+            $('#bouton-historique').on('click', function () {
+                console.log("Redirection vers l'historique des consultations.");
+                window.location.href = 'historique.html';
+            });
+
+            $('#bouton-voir-liste').on('click', function () {
+                console.log("Redirection vers la liste des mediums.");
+                window.location.href = 'listeMedium.html';
+            });
+        });
+    </script>
+</body>
+</html>

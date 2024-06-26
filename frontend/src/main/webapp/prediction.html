@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Consultation en cours...</title>
+        <link href="prediction.css" rel="stylesheet" type="text/css">
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    </head>
+    <body>
+        <div id="header">
+            <img src="logo1.png" alt="Logo" id="logo1">
+            <div id="nav-connecte">
+                <button class="nav-button" id="bouton-consultation">Consultation en cours</button>
+                <button class="nav-button" id="logout">Se déconnecter</button>
+            </div>
+        </div>
+
+        <img src="logo7.png" alt="Bannière" id="banner">
+
+        <div class="hero">
+            <h1>Echelle Du Bonheur</h1>
+        </div>
+
+        <div id="zone-note">
+            <div class="note-section" data-category="amour">
+                <img src="logo4.png" alt="Amour">
+                <div class="stars">
+                    <span class="star" data-value="1">&#9733;</span>
+                    <span class="star" data-value="2">&#9733;</span>
+                    <span class="star" data-value="3">&#9733;</span>
+                    <span class="star" data-value="4">&#9733;</span>
+                </div>
+            </div>
+            <div class="note-section" data-category="sante">
+                <img src="logo5.png" alt="Santé">
+                <div class="stars">
+                    <span class="star" data-value="1">&#9733;</span>
+                    <span class="star" data-value="2">&#9733;</span>
+                    <span class="star" data-value="3">&#9733;</span>
+                    <span class="star" data-value="4">&#9733;</span>
+                </div>
+            </div>
+            <div class="note-section" data-category="travail">
+                <img src="logo6.png" alt="Travail">
+                <div class="stars">
+                    <span class="star" data-value="1">&#9733;</span>
+                    <span class="star" data-value="2">&#9733;</span>
+                    <span class="star" data-value="3">&#9733;</span>
+                    <span class="star" data-value="4">&#9733;</span>
+                </div>
+            </div>
+            <button id="bouton-obtenir-prediction">Obtenir une prédiction</button>
+        </div>
+
+        <div id="modal-prediction" class="modal">
+            <div class="modal-content">
+                <h2>Prédictions</h2>
+                <div id="prediction-content">
+                    <div class="prediction-section">
+                        <img src="logo4.png" alt="Amour">
+                        <p id="prediction-amour"></p>
+                    </div>
+                    <div class="prediction-section">
+                        <img src="logo5.png" alt="Santé">
+                        <p id="prediction-sante"></p>
+                    </div>
+                    <div class="prediction-section">
+                        <img src="logo6.png" alt="Travail">
+                        <p id="prediction-travail"></p>
+                    </div>
+                </div>
+                <button id="close-modal">Fermer</button>
+            </div>
+        </div>
+
+    </body>
+</html>
+
+
+
+<script>
+    $(document).ready(function () {
+        var idConsult = 0;
+        var notes = {amour: 0, sante: 0, travail: 0};
+
+        $.ajax({
+            url: './ActionServlet',
+            method: 'GET',
+            data: {todo: 'afficherConsultationEnCoursEmploye'},
+            dataType: 'json'
+        }).done(function (response) {
+            if (response.idConsultation) {
+                idConsult = response.idConsultation;
+            }
+        }).fail(function (error) {
+            console.log('Error afficherConsultationEnCoursEmploye', error);
+        });
+
+        $('.star').on('click', function () {
+            var category = $(this).closest('.note-section').data('category');
+            var value = $(this).data('value');
+            notes[category] = value;
+            $(this).siblings().removeClass('selected');
+            $(this).prevAll().addBack().addClass('selected');
+        });
+
+        $('#bouton-obtenir-prediction').on('click', function () {
+            $.ajax({
+                url: './ActionServlet',
+                method: 'POST',
+                data: {
+                    todo: 'obtenirPredictions',
+                    idConsultation: idConsult,
+                    amour: notes.amour,
+                    sante: notes.sante,
+                    travail: notes.travail
+                },
+                dataType: 'json'
+            }).done(function (response) {
+                if (response.liste && response.liste.length === 3) {
+                    $('#prediction-amour').text(response.liste[0]);
+                    $('#prediction-sante').text(response.liste[1]);
+                    $('#prediction-travail').text(response.liste[2]);
+                } else {
+                    $('#prediction-content').html("<p>Aucune prédiction trouvée ou prédiction incomplète.</p>");
+                }
+                $('#modal-prediction').show(); // Affiche la fenêtre modale
+            }).fail(function (error) {
+                console.log('Error obtenirPredictions:', error);
+                alert("Erreur lors de l'appel AJAX");
+            });
+        });
+
+        $('#logout').on('click', function () {
+            $.ajax({
+                url: './ActionServlet',
+                method: 'POST',
+                data: {todo: 'deconnexion'},
+                dataType: 'json'
+            }).done(function (response) {
+                if (response.success) {
+                    console.log("Logout successful");
+                    localStorage.removeItem('commentValidated'); // Ensure the local storage is cleared on logout
+                    window.location.href = 'index.html';
+                } else {
+                    console.log("Logout failed: " + response.message);
+                    alert("Déconnexion échouée: " + response.message);
+                }
+            }).fail(function (error) {
+                console.log('Error deconnexion:', error);
+                alert("Erreur lors de l'appel AJAX: " + error.statusText);
+            });
+        });
+
+        $('#close-modal').on('click', function () {
+            $('#modal-prediction').hide();
+        });
+
+        $('#bouton-consultation').on('click', function () {
+            window.location.href = 'consultation.html';
+        });
+    });
+
+</script>
+</body>
+</html>

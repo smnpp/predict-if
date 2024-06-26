@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Accueil</title>
+        <link href="index.css" rel="stylesheet" type="text/css">
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+    </head>
+    <body>
+        <div id="header" class="header-common">
+            <img src="logo1.png" alt="Logo" id="logo1">
+
+            <div id="nav-non-connecte" class="nav-section">
+                <div id="buttons">
+                    <button id="bouton-voir-liste" class="button">Voir liste medium</button>
+                    <button id="bouton-login" class="button">Login/Register</button>
+                </div>
+            </div>
+
+            <div id="nav-connecte-client" class="nav-section" style="display: none;">
+                <div id="buttons">
+                    <button id="bouton-voir-liste-connecte" class="button">Voir liste medium</button>
+                    <button id="bouton-historique" class="button">Voir historique</button>
+                    <button id="bouton-profil" class="button">Profil astral</button>
+                    <button id="logout-client" class="button">Logout</button>
+                </div>
+            </div>
+
+            <div id="nav-connecte-employe" class="nav-section" style="display: none;">
+                <div id="buttons">
+                    <button id="consultation-attente" class="button">Consultation en Attente !</button>
+                    <button id="bouton-voir-commentaire" class="button">Commentaires</button>
+                    <button id="logout-employe" class="button">Logout</button>
+                </div>
+            </div>
+        </div>
+        <img src="logo2.png" alt="Logo" id="logo2"> <br>
+        <p>Plongez dans l'univers mystique du zodiaque avec notre site web révolutionnaire! 
+            Notre plateforme innovante utilise les anciennes connaissances astrologiques pour vous offrir 
+            des prédictions personnalisées et des conseils éclairés sur votre avenir. Que vous soyez curieux de découvrir 
+            ce que les étoiles réservent pour vous ou que vous cherchiez des réponses à 
+            vos questions les plus pressantes, notre équipe d'experts astrologues est là pour vous guider.</p>
+        <div id="main-content" class="main-content-section">
+
+
+            <div class="carousel-container">
+                <div class="carousel">
+                    <div class="carousel-item">
+                        <img src="medium1.png" alt="Professeur Tran">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="medium2.png" alt="Serena">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="medium3.png" alt="Endora">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="medium4.png" alt="Mme Irma">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="medium5.png" alt="Mr M">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="employee-stats" class="employee-stats-section" style="display: none;">
+            <div class="stats-container">
+                <div id="top-5-medium">
+                    <h3>Top 5 Medium</h3>
+                    <div id="medium-list-employe"></div>
+                </div>
+                <div id="map-container">
+                    <h3>Répartition du nombre de clients par pays</h3>
+                    <div id="map"></div>
+                    <div id="country-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let availableImages = [];
+            for (let i = 1; i <= 21; i++) {
+                availableImages.push('medium' + i + '.png');
+            }
+
+            function getUniqueRandomImage() {
+                if (availableImages.length === 0) {
+                    return null;
+                }
+                const randomIndex = Math.floor(Math.random() * availableImages.length);
+                const selectedImage = availableImages[randomIndex];
+                availableImages.splice(randomIndex, 1);
+                return selectedImage;
+            }
+
+            $(document).ready(function () {
+                console.log("Document ready");
+
+                function afficherListeMediums(selector, mediums) {
+                    var mediumList = $(selector);
+                    if (mediums && mediums.length > 0) {
+                        mediumList.empty();
+                        mediums.forEach(function (medium) {
+                            var mediumHtml = `
+                                <div class="medium-card">
+                                    <img src="${getUniqueRandomImage()}" alt="${medium.denomination}" class="medium-img">
+                                    <div class="medium-info">
+                                        <h2>${medium.denomination}</h2>
+                                        <p>Genre : ${medium.genre}</p>
+                                        ${getMediumDetails(medium)}
+                                    </div>
+                                </div>`;
+                            mediumList.append(mediumHtml);
+                        });
+                    } else {
+                        mediumList.html("<p>Aucun medium trouvé.</p>");
+                    }
+                }
+
+                function getMediumDetails(medium) {
+                    if (medium.type === "spirite") {
+                        return `<p>Supports: ${medium.supports.join(", ")}</p>`;
+                    } else if (medium.type === "astrologue") {
+                        return `<p>Formation: ${medium.formation}</p><p>Promotion: ${medium.promotion}</p>`;
+                    } else {
+                        return `<p>Description: ${medium.presentation}</p>`;
+                    }
+                }
+
+                // Fonction d'initialisation de la carte
+                function initMap() {
+                    console.log("initMap called");
+                    var map = L.map('map').setView([0, 0], 2);
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    }).addTo(map);
+
+                    var markers = L.markerClusterGroup();
+                    var countryCounts = {};
+
+                    function afficherCoordonneesSurCarte(coordonnees) {
+                        console.log("afficherCoordonneesSurCarte called with coordonnees:", coordonnees);
+                        var requests = coordonnees.map(function (coord) {
+                            var marker = L.marker([coord.lat, coord.lng]);
+                            marker.bindPopup(`<p>Latitude: ${coord.lat}, Longitude: ${coord.lng}</p>`);
+                            markers.addLayer(marker);
+
+                            var url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${coord.lat}&lon=${coord.lng}`;
+                            return $.getJSON(url).then(function (data) {
+                                var country = data.address.country;
+                                if (country in countryCounts) {
+                                    countryCounts[country]++;
+                                } else {
+                                    countryCounts[country] = 1;
+                                }
+                            });
+                        });
+
+                        map.addLayer(markers);
+
+                        $.when.apply($, requests).done(function () {
+                            // Affichage de la liste des pays
+                            var countryListHtml = '';
+                            var sortedCountries = Object.keys(countryCounts).sort(function (a, b) {
+                                return countryCounts[b] - countryCounts[a];
+                            });
+                            sortedCountries.forEach(function (country) {
+                                countryListHtml += `<p>${country} : ${countryCounts[country]} clients</p>`;
+                            });
+                            $('#country-list').html(countryListHtml);
+                        });
+                    }
+
+                    // Appeler l'API pour obtenir les coordonnées et les afficher sur la carte
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'GET',
+                        data: {todo: 'obtenirStatistiquesGeo'},
+                        dataType: 'json'
+                    }).done(function (response) {
+                        console.log("obtenirStatistiquesGeo response:", response);
+                        if (response.coordonnees) {
+                            afficherCoordonneesSurCarte(response.coordonnees);
+                        } else {
+                            console.error("Erreur lors de la récupération des coordonnées.");
+                        }
+                    }).fail(function (error) {
+                        console.error("Erreur lors de la récupération des coordonnées:", error);
+                    });
+                }
+
+                // Appeler la fonction d'initialisation de la carte lorsque le document est prêt
+                initMap();
+
+                // Vérifier l'état de la session via une requête AJAX
+                $.ajax({
+                    url: './ActionServlet',
+                    method: 'GET',
+                    data: {todo: 'verifierConnexion'},
+                    dataType: 'json'
+                }).done(function (response) {
+                    console.log("verifierConnexion response:", response.connected);
+                    if (response.idClient) {
+                        // Client connecté
+                        $('#nav-non-connecte').hide();
+                        $('#nav-connecte-client').show();
+                        $('#nav-connecte-employe').hide();
+                        $('#main-content').show();
+                        $('#employee-stats').hide();
+                        $.ajax({
+                            url: './ActionServlet',
+                            method: 'GET',
+                            data: {todo: 'listerMediums'},
+                            dataType: 'json'
+                        }).done(function (response) {
+                            afficherListeMediums("#medium-list-client", response.mediums);
+                        }).fail(function (error) {
+                            $("#medium-list-client").html("<p>Erreur lors de la récupération des mediums.</p>");
+                        });
+                    } else if (response.idEmploye) {
+                        // Employé connecté
+                        $('#nav-non-connecte').hide();
+                        $('#nav-connecte-client').hide();
+                        $('#nav-connecte-employe').show();
+                        $('#main-content').hide();
+                        $('#employee-stats').show();
+                        $('#header').addClass('header-employe-connecte');
+
+                        $.ajax({
+                            url: './ActionServlet',
+                            method: 'GET',
+                            data: {todo: 'afficherConsultationEnCoursEmploye'},
+                            dataType: 'json'
+                        }).done(function (response) {
+                            if (response.idConsultation) {
+                                $('#consultation-attente').show();
+                            } else {
+                                $('#consultation-attente').hide();
+                            }
+                        }).fail(function (error) {
+                            $("#consultation-attente").html("<p>Erreur lors de la récupération de la consultation en attente.</p>");
+                        });
+
+                        $.ajax({
+                            url: './ActionServlet',
+                            method: 'GET',
+                            data: {todo: 'obtenirStatistiquesGeo'},
+                            dataType: 'json'
+                        }).done(function (response) {
+                            if (response.coordonnees) {
+                                afficherCoordonnees("#geo-coordinates", response.coordonnees);
+                            } else {
+                                $("#geo-coordinates").html("<p>Erreur lors de la récupération des coordonnées.</p>");
+                            }
+                        }).fail(function (error) {
+                            $("#geo-coordinates").html("<p>Erreur lors de la récupération des coordonnées.</p>");
+                        });
+
+                        $.ajax({
+                            url: './ActionServlet',
+                            method: 'GET',
+                            data: {todo: 'obtenirStatistiquesTop5'},
+                            dataType: 'json'
+                        }).done(function (response) {
+                            afficherListeMediums("#medium-list-employe", response.mediums);
+                        }).fail(function (error) {
+                            $("#medium-list-employe").html("<p>Erreur lors de la récupération des mediums.</p>");
+                        });
+
+                    } else {
+                        // Non connecté
+                        $('#nav-non-connecte').show();
+                        $('#nav-connecte-client').hide();
+                        $('#nav-connecte-employe').hide();
+                        $('#main-content').show();
+                        $('#employee-stats').hide();
+                        $.ajax({
+                            url: './ActionServlet',
+                            method: 'GET',
+                            data: {todo: 'listerMediums'},
+                            dataType: 'json'
+                        }).done(function (response) {
+                            afficherListeMediums("#medium-list", response.mediums);
+                        }).fail(function (error) {
+                            $("#medium-list").html("<p>Erreur lors de la récupération des mediums.</p>");
+                        });
+                    }
+                }).fail(function (error) {
+                    console.log('Error verifierConnexion:', error);
+                });
+
+                // Déconnexion lors du clic sur le bouton "Logout"
+                $('#logout-client, #logout-employe').on('click', function () {
+                    $.ajax({
+                        url: './ActionServlet',
+                        method: 'POST',
+                        data: {todo: 'deconnexion'},
+                        dataType: 'json'
+                    }).done(function (response) {
+                        if (response.success) {
+                            console.log("Logout successful");
+                            window.location.href = 'index.html';
+                        } else {
+                            console.log("Logout failed: " + response.message);
+                            alert("Déconnexion échouée: " + response.message);
+                        }
+                    }).fail(function (error) {
+                        console.log('Error deconnexion:', error);
+                        alert("Erreur lors de l'appel AJAX: " + error.statusText);
+                    });
+                });
+
+                // Redirections vers les différentes pages
+                $('#bouton-voir-liste, #bouton-voir-liste-connecte').on('click', function () {
+                    window.location.href = 'listeMedium.html';
+                });
+
+                $('#bouton-login').on('click', function () {
+                    window.location.href = 'login.html';
+                });
+
+                $('#consultation-attente').on('click', function () {
+                    window.location.href = 'profilClientEnAttente.html';
+                });
+
+                $('#bouton-profil').on('click', function () {
+                    window.location.href = 'profilAstral.html';
+                });
+
+                $('#bouton-historique').on('click', function () {
+                    window.location.href = 'historique.html';
+                });
+
+                $('#bouton-voir-commentaire').on('click', function () {
+                    window.location.href = 'commentaires.html';
+                });
+            });
+
+        </script>
+    </body>
+</html>
